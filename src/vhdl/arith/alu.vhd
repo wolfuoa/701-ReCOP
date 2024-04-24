@@ -11,22 +11,22 @@ USE work.various_constants.ALL;
 
 ENTITY alu IS
     PORT (
-        clk    : IN  bit_1;
-        z_flag : OUT bit_1;
+        clk           : IN  bit_1;
+        z_flag        : OUT bit_1;
         -- ALU operation selection
-        alu_operation : IN bit_3;
+        alu_operation : IN  bit_3;
         -- operand selection
-        alu_op1_sel : IN  bit_2;
-        alu_op2_sel : IN  bit_1;
-        alu_carry   : IN  bit_1; --WARNING: carry in currently is not used
-        alu_result  : OUT bit_16 := X"0000";
+        alu_op1_sel   : IN  bit_2;
+        alu_op2_sel   : IN  bit_1;
+        alu_carry     : IN  bit_1; --WARNING: carry in currently is not used
+        alu_result    : OUT bit_16 := X"0000";
         -- operands
-        rx         : IN bit_16;
-        rz         : IN bit_16;
-        ir_operand : IN bit_16;
+        rx            : IN  bit_16;
+        rz            : IN  bit_16;
+        ir_operand    : IN  bit_16;
         -- flag control signal
-        clr_z_flag : IN bit_1;
-        reset      : IN bit_1
+        clr_z_flag    : IN  bit_1;
+        reset         : IN  bit_1
     );
 END alu;
 

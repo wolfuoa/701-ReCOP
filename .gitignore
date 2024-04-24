@@ -28,6 +28,8 @@
 
 .DS_Store
 
+work/
+
 # ignore Quartus II generated files
 *_generation_script*
 *_inst.vhd
