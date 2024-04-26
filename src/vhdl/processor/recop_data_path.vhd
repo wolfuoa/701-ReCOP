@@ -1,5 +1,3 @@
-
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.std_logic_unsigned.ALL;
@@ -27,14 +25,6 @@ END recop_data_path;
 ARCHITECTURE bhv OF recop_data_path IS
 
     SIGNAL PC :
-
-    COMPONENT prog_mem IS
-        PORT (
-            address : IN  STD_LOGIC_VECTOR (14 DOWNTO 0);
-            clock   : IN  STD_LOGIC := '1';
-            q       : OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
-        );
-    END COMPONENT;
 
     COMPONENT data_mem IS
         PORT (

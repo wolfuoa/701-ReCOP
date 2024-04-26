@@ -33,8 +33,19 @@ END recop_top_level;
 
 ARCHITECTURE bhv OF recop_top_level IS
 
-    SIGNAL PC : STD_LOGIC_VECTOR(15 DOWNTO 0);
-    SIGNAL SR : STD_LOGIC;
+    SIGNAL PC                  : STD_LOGIC_VECTOR(14 DOWNTO 0);
+    SIGNAL SR                  : STD_LOGIC;
+    SIGNAL instruction         : STD_LOGIC_VECTOR(15 DOWNTO 0);
+
+    SIGNAL instruction_fetched : STD_LOGIC;
+
+    COMPONENT prog_mem IS
+        PORT (
+            address : IN  STD_LOGIC_VECTOR (14 DOWNTO 0);
+            clock   : IN  STD_LOGIC := '1';
+            q       : OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
+        );
+    END COMPONENT;
 
     COMPONENT recop_data_path IS
         PORT MAP(
@@ -47,5 +58,35 @@ ARCHITECTURE bhv OF recop_top_level IS
 
         );
     END COMPONENT;
+
+    COMPONENT second_cycle IS
+        PORT MAP(
+            clk => clk,
+            reset  : IN  STD_LOGIC;
+            enable : IN  STD_LOGIC;
+            q      : OUT STD_LOGIC;
+        );
+    END COMPONENT;
+BEGIN
+
+    instruction_memory : prog_mem PORT MAP(
+        address => PC,
+        clock   => clk,
+        q       => instruction
+    );
+
+    cycle_counter : second_cycle PORT MAP(
+        clk    => clk,
+        reset  => reset,
+        enable => "1",
+        q      => instruction_fetched
+    );
+
+    PROCESS
+    BEGIN
+        IF (rising_edge(clk)) THEN
+            PC <= PC + 1;
+        END IF;
+    END PROCESS;
 
 END bhv;
