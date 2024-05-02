@@ -47,17 +47,17 @@ ARCHITECTURE bhv OF recop_top_level IS
         );
     END COMPONENT;
 
-    COMPONENT recop_data_path IS
-        PORT MAP(
+    -- COMPONENT recop_data_path IS
+    --     PORT MAP(
 
-        );
-    END COMPONENT;
+    --     );
+    -- END COMPONENT;
 
-    COMPONENT recop_control_unit IS
-        PORT MAP(
+    -- COMPONENT recop_control_unit IS
+    --     PORT MAP(
 
-        );
-    END COMPONENT;
+    --     );
+    -- END COMPONENT;
 
     COMPONENT second_cycle IS
         PORT MAP(
