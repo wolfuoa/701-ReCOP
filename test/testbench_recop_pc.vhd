@@ -73,6 +73,10 @@ BEGIN
         t_wren <= '0';
         WAIT FOR 10 ns;
         t_wren <= '1';
+        WAIT FOR 200 ns;
+        t_wren <= '0';
+        WAIT FOR 100 ns;
+        t_wren <= '1';
         WAIT;
     END PROCESS;
 
