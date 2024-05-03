@@ -1,90 +1,82 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.std_logic_unsigned.ALL;
-USE ieee.std_logic_arith.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 
-ENTITY testbench_recop_pc IS
-END testbench_recop_pc;
+entity testbench_recop_pc is
+end testbench_recop_pc;
 
-ARCHITECTURE arch OF testbench_recop_pc IS
-    SIGNAL t_clk      : STD_LOGIC;
-    SIGNAL t_wren     : STD_LOGIC;
-    SIGNAL t_reset    : STD_LOGIC;
+architecture arch of testbench_recop_pc is
+    signal t_clk             : std_logic;
+    signal t_wren            : std_logic;
+    signal t_reset           : std_logic;
+    signal t_pc_input_select : std_logic := '0';
 
-    SIGNAL t_addr_new : STD_LOGIC_VECTOR(15 DOWNTO 0);
-    SIGNAL t_out_addr : STD_LOGIC_VECTOR(15 DOWNTO 0);
+    signal t_addr_new        : std_logic_vector(15 downto 0);
+    signal t_out_addr        : std_logic_vector(15 downto 0);
 
-    COMPONENT pc IS
-        PORT (
-            clock    : IN  STD_LOGIC;
-            reset    : IN  STD_LOGIC;
+begin
 
-            -- Control Signals
-            wren     : IN  STD_LOGIC;
-
-            -- Data Signals
-            addr_new : IN  STD_LOGIC_VECTOR(15 DOWNTO 0);
-            out_addr : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+    DUT : entity work.pc port map(
+        clock           => t_clk,
+        reset           => t_reset,
+        enable          => t_wren,
+        pc_input_select => t_pc_input_select,
+        jmp_address     => t_addr_new,
+        pc              => t_out_addr
         );
-    END COMPONENT;
 
-BEGIN
+    process
+    begin
 
-    DUT : pc PORT MAP(
-        clock    => t_clk,
-        reset    => t_reset,
-        wren     => t_wren,
-        addr_new => t_addr_new,
-        out_addr => t_out_addr
-    );
-
-    PROCESS
-    BEGIN
-
-        WAIT FOR 100 ns;
-        t_addr_new <= x"0F0F";
-        WAIT FOR 100 ns;
-        t_addr_new <= x"7EA5";
-        WAIT FOR 100 ns;
+        wait for 1000 ns;
+        t_addr_new        <= x"0F0F";
+        t_pc_input_select <= '1';
+        wait for 100 ns;
+        t_pc_input_select <= '0';
+        wait for 100 ns;
+        t_pc_input_select <= '1';
+        t_addr_new        <= x"7EA5";
+        wait for 100 ns;
         t_addr_new <= x"6432";
-        WAIT FOR 100 ns;
+        wait for 1000 ns;
         t_addr_new <= x"DEAD";
-        WAIT FOR 100 ns;
+        wait for 100 ns;
         t_addr_new <= x"BEEF";
-        WAIT FOR 100 ns;
+        wait for 100 ns;
         t_addr_new <= x"BADD";
-        WAIT FOR 100 ns;
+        wait for 100 ns;
         t_addr_new <= x"BEAD";
-        WAIT FOR 100 ns;
+        wait for 100 ns;
         t_addr_new <= x"9A2B";
 
-    END PROCESS;
+    end process;
 
-    PROCESS
-    BEGIN
+    process
+    begin
         t_reset <= '1';
-        WAIT FOR 10 ns;
+        wait for 10 ns;
         t_reset <= '0';
-        WAIT;
-    END PROCESS;
+        wait;
+    end process;
 
-    PROCESS
-    BEGIN
+    process
+    begin
         t_wren <= '0';
-        WAIT FOR 10 ns;
+        wait for 10 ns;
         t_wren <= '1';
-        WAIT FOR 200 ns;
+        wait for 200 ns;
         t_wren <= '0';
-        WAIT FOR 100 ns;
+        wait for 100 ns;
         t_wren <= '1';
-        WAIT;
-    END PROCESS;
+        wait;
+    end process;
 
-    PROCESS
-    BEGIN
+    process
+    begin
         t_clk <= '1';
-        WAIT FOR 10 ns;
+        wait for 10 ns;
         t_clk <= '0';
-        WAIT FOR 10 ns;
-    END PROCESS;
-END arch; -- testbench_recop_pc
+        wait for 10 ns;
+    end process;
+end arch; -- testbench_recop_pc
