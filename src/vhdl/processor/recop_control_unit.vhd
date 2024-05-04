@@ -1,29 +1,27 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 
+use work.recop_types.all;
+use work.opcodes.all;
+use work.various_constants.all;
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.std_logic_unsigned.ALL;
-USE ieee.std_logic_arith.ALL;
+entity recop_control_unit is
+    port (
+        clk : in bit_1;
+        packet : in STD_LOGIC_VECTOR(31 downto 0);
+        reset : in bit_1;
 
-USE work.recop_types.ALL;
-USE work.opcodes.ALL;
-USE work.various_constants.ALL;
-
-ENTITY recop_control_unit IS
-    PORT (
-        clk : IN bit_1;
-        packet : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        reset : IN bit_1;
-
-        -- External Signal I/O
-        SOP : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        SIP : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
+        -- External Signal I/O  
+        SOP : out STD_LOGIC_VECTOR(15 downto 0);
+        SIP : in STD_LOGIC_VECTOR(15 downto 0)
 
     );
-END recop_control_unit;
+end recop_control_unit;
 
-ARCHITECTURE bhv OF recop_control_unit IS
+architecture bhv of recop_control_unit is
 
-BEGIN
+begin
 
-END bhv;
+end bhv;
