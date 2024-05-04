@@ -14,10 +14,6 @@ entity register_file is
     rz_index              : in  integer range 0 to 15;
     rx_index              : in  integer range 0 to 15;
 
-    -- register data outputs
-    rx                    : out std_logic_vector(15 downto 0);
-    rz                    : out std_logic_vector(15 downto 0);
-
     -- select rz from IR or r7
     rz_select             : in  std_logic;
 
@@ -28,7 +24,11 @@ entity register_file is
     immediate             : in  std_logic_vector(15 downto 0);
     data_memory           : in  std_logic_vector(15 downto 0);
     alu_out               : in  std_logic_vector(15 downto 0);
-    sip                   : in  std_logic_vector(15 downto 0)
+    sip                   : in  std_logic_vector(15 downto 0);
+
+    -- register data outputs
+    rx                    : out std_logic_vector(15 downto 0);
+    rz                    : out std_logic_vector(15 downto 0)
   );
 end entity;
 
@@ -40,7 +40,7 @@ architecture beh of register_file is
 begin
 
   -- mux selecting address for Rz
-  register_z_select_mux: process (rz_select, rz_index, temp_rz_index)
+  register_z_select_mux: process (rz_select, rz_index)
   begin
     case rz_select is
       when '0' =>
@@ -77,9 +77,7 @@ begin
     elsif rising_edge(clock) then
       -- write data into Rz if ld signal is asserted
       if write_enable = '1' then
-        if (rz_select = '1') then
-          regs(temp_rz_index) <= data_input_z;
-        end if;
+        regs(temp_rz_index) <= data_input_z;
       end if;
     end if;
   end process;

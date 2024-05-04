@@ -62,7 +62,9 @@ begin
     t_write_enable <= '0';
     wait for 30 ns;
     t_write_enable <= '1';
-    wait;
+    wait for 300 ns;
+    t_write_enable <= '0';
+    wait for 700 ns;
   end process;
 
   process
