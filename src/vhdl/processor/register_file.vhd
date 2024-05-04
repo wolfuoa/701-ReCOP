@@ -78,7 +78,7 @@ begin
       -- write data into Rz if ld signal is asserted
       if write_enable = '1' then
         if (rz_select = '1') then
-          regs(rz_index) <= data_input_z;
+          regs(temp_rz_index) <= data_input_z;
         end if;
       end if;
     end if;
