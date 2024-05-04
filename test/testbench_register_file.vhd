@@ -70,17 +70,16 @@ begin
   process
   begin
     t_rz_select <= '0';
-    wait;
-  end process;
-
-  process
-  begin
+    t_rz_index <= 0;
     t_register_write_select <= "00";
     wait for 600 ns;
+    t_rz_select <= '1';
     t_register_write_select <= "01";
     wait for 600 ns;
+    t_rz_select <= '0';
     t_register_write_select <= "10";
     wait for 600 ns;
+    t_rz_index <= 7;
     t_register_write_select <= "11";
     wait for 600 ns;
   end process;
