@@ -51,16 +51,16 @@ begin
     begin
         t_write_enable <= '0';
         wait for 30 ns;
-        t_write_enable <= '0';
+        t_write_enable <= '1';
         wait;
     end process;
     process
     begin
-        t_instruction <= x"BEEF";
+        t_instruction <= x"BEEFC0CC";
         wait for 500 ns;
-        t_instruction <= x"C0CC";
+        t_instruction <= x"C0CCBEEF";
         wait for 400 ns;
-        t_instruction <= x"1001";
+        t_instruction <= x"10016969";
         wait for 400 ns;
     end process;
 

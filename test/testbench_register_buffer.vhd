@@ -3,10 +3,10 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-entity testbench_operand_register is
-end testbench_operand_register;
+entity testbench_register_buffer is
+end testbench_register_buffer;
 
-architecture arch of testbench_operand_register is
+architecture arch of testbench_register_buffer is
     signal t_clock : std_logic;
     signal t_reset : std_logic;
     signal t_write_enable : std_logic;
@@ -15,7 +15,10 @@ architecture arch of testbench_operand_register is
     signal t_data_out : std_logic_vector(3 downto 0);
     
 begin
-    operand_register_inst: entity work.operand_register
+    dut: entity work.register_buffer
+     generic map(
+        width => 16
+    )
      port map(
         clock => t_clock,
         reset => t_reset,

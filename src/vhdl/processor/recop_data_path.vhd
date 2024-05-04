@@ -19,6 +19,9 @@ entity recop_data_path is
         instruction_register_write_enable : in std_logic;
         rz_register_write_enable: in std_logic;
         rx_register_write_enable: in std_logic;
+        alu_register_write_enable : in std_logic;
+        mdr_write_enable : in std_logic;
+        z_register_write_enable : in std_logic;
 
         -- Outputs for the control unit
         addressing_mode : out std_logic_vector(1 downto 0);
@@ -43,6 +46,18 @@ architecture bhv of recop_data_path is
 
     signal rz_register_value_out : std_logic_vector(15 downto 0);
     signal rx_register_value_out : std_logic_vector(15 downto 0);
+
+    signal alu_register_value_in : std_logic_vector(15 downto 0);
+    signal alu_register_value_out : std_logic_vector(15 downto 0);
+
+    signal mdr_value_in : std_logic_vector(15 downto 0);
+    signal mdr_value_out : std_logic_vector(15 downto 0);
+
+    signal z_register_value_in : std_logic_vector(0 downto 0);
+    signal z_register_value_out : std_logic_vector(0 downto 0);
+
+
+
 begin
 
     pc_inst : entity work.pc
@@ -80,9 +95,12 @@ begin
         );
     -- Register file
 
-    -- Operand Regs
+    -- Operand Regs ... Untested
 
-    rx: entity work.operand_register
+    rx_register: entity work.register_buffer
+     generic map(
+        width => 16
+    )
      port map(
         clock => clock,
         reset => reset,
@@ -91,7 +109,10 @@ begin
         data_out => rx_register_value_out
     );
 
-    rz: entity work.operand_register
+    rz_register: entity work.register_buffer
+     generic map(
+        width => 16
+    )
      port map(
         clock => clock,
         reset => reset,
@@ -104,7 +125,43 @@ begin
 
     -- ALU Reg
 
+    alu_register: entity work.register_buffer
+     generic map(
+        width => 16
+    )
+     port map(
+        clock => clock,
+        reset => reset,
+        write_enable => alu_register_write_enable,
+        data_in => alu_register_value_in,
+        data_out => alu_register_value_out
+    );
+
     -- Data Memory
 
     -- MDR
+
+    mdr: entity work.register_buffer
+     generic map(
+        width => 16
+    )
+     port map(
+        clock => clock,
+        reset => reset,
+        write_enable => mdr_write_enable,
+        data_in => mdr_value_in,
+        data_out => mdr_value_out
+    );
+
+    z_register: entity work.register_buffer
+     generic map(
+        width => 1
+    )
+     port map(
+        clock => clock,
+        reset => reset,
+        write_enable => z_register_write_enable,
+        data_in => z_register_value_in,
+        data_out => z_register_value_out
+    );
 end bhv;

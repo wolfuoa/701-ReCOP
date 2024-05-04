@@ -2,20 +2,23 @@ library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity operand_register is
+entity register_buffer is
+  generic (
+    width : integer range 0 to 32
+  );
   port (
     clock : in std_logic;
     reset : in std_logic;
     write_enable : in std_logic;
 
-    data_in : in std_logic_vector(3 downto 0);
-    data_out : out std_logic_vector(3 downto 0)
+    data_in : in std_logic_vector(width-1 downto 0);
+    data_out : out std_logic_vector(width-1 downto 0)
   );
-end operand_register;
+end register_buffer;
 
-architecture arch of operand_register is
+architecture arch of register_buffer is
 
-signal next_data : std_logic_vector(3 downto 0) := (others => '0');
+signal next_data : std_logic_vector(width-1 downto 0) := (others => '0');
 
 begin
 

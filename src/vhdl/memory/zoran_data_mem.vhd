@@ -40,7 +40,7 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY data_mem IS
+ENTITY zoran_data_mem IS
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (11 DOWNTO 0);
@@ -49,7 +49,7 @@ ENTITY data_mem IS
 		wren		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (15 DOWNTO 0)
 	);
-END data_mem;
+END zoran_data_mem;
 
 
 ARCHITECTURE SYN OF data_mem IS

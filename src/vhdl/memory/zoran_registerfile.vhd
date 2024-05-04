@@ -6,7 +6,7 @@ USE IEEE.numeric_std.ALL;
 USE work.recop_types.ALL;
 USE work.various_constants.ALL;
 
-ENTITY register_file IS
+ENTITY zoran_register_file IS
     PORT (
         clk : IN bit_1;
         init : IN bit_1;
@@ -34,9 +34,9 @@ ENTITY register_file IS
         dprr_wren : IN bit_1
 
     );
-END register_file;
+END zoran_register_file;
 
-ARCHITECTURE beh OF register_file IS
+ARCHITECTURE beh OF zoran_register_file IS
     TYPE reg_array IS ARRAY (15 DOWNTO 0) OF bit_16;
     SIGNAL regs : reg_array;
     SIGNAL data_input_z : bit_16;

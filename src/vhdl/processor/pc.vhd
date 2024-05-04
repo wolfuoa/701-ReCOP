@@ -38,6 +38,7 @@ begin
                 case pc_input_select is
                     when pc_input_select_aluout => pc_internal <= alu_out;
                     when pc_input_select_jmp => pc_internal <= jump_address;
+                    when others => pc_internal <= (others => 'X');
                 end case;
             end if;
         end if;

@@ -47,12 +47,35 @@ architecture rtl of control_unit is
 begin
 
    -- TODO: implement ALU opcode 
-   ALU_OP_DECODE : process (opcode)
+   ALU_OP_DECODE : process (opcode, am_mode)
    begin
 
-   -- case opcode is 
-   --    when 
-    end process;
+      case am_mode is 
+         when am_inherent  =>
+       
+
+
+         when am_immediate => -- Uses immediate value
+            case opcode is 
+               when ldr =>
+
+
+               when str => 
+
+
+               
+
+            end case;
+
+
+         when am_direct => -- Uses registeres Rx and Ry 
+
+
+         when am_register => -- 
+
+      end case;
+    
+   end process;
 
    CYCLE_OUTPUT_DECODE : process (state)
    begin
@@ -99,9 +122,27 @@ begin
 
    NEXT_STATE_DECODE : process (state)
    begin
-case state is
-   
+      case(state) is
+         when instruction_fetch  =>
+         next_state <= reg_access when (opcode = (andr or orr or addr or subvr)) else load_imm; 
 
+         when load_imm => 
+         next_state <= instruction_fetch;
+         
+         when reg_access => 
+         next_state <= reg_reg when (opcode = (andr or orr or addr or subvr)) else reg_imm;
+
+         when reg_reg =>
+         next_state <= store_reg;
+
+         when reg_imm =>
+         next_state <= store_reg;
+
+         when store_reg =>
+         next_state <= instruction_fetch;
+         
+      end case;
+      
    end process;
 
    SYNC : process (clock, reset)
