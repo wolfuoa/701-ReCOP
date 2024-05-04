@@ -23,7 +23,7 @@ ENTITY control_unit IS
       zero_reg_reset : OUT STD_LOGIC;
       dm_write_en : OUT STD_LOGIC;
       dpcr_sel : OUT STD_LOGIC;
-      alu_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+      alu_op : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
       dm_addr_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
       regfile_write_en : OUT STD_LOGIC;
       aluOp1_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -40,11 +40,10 @@ ENTITY control_unit IS
 END ENTITY control_unit;
 
 ARCHITECTURE rtl OF control_unit IS
-   TYPE state_type IS (instruction_fetch); -- TODO: Add all other states 
+   TYPE state_type IS (instruction_fetch, reg_access, reg_reg_op, store_reg); -- TODO: Add all other states 
    SIGNAL state, next_state : state_type;
 BEGIN
-
-   OUTPUT_DECODE : PROCESS (state)
+   CYCLE_OUTPUT_DECODE : PROCESS (state)
    BEGIN
       CASE(state) IS
          WHEN instruction_fetch =>
@@ -54,6 +53,15 @@ BEGIN
          aluOp2_sel <= "10";
          alu_reg_write_en <= '1';
 
+         WHEN reg_access =>
+         pc_write_en <= '1';
+         pc_write_sel <= '1';
+         rz_write_en <= '1';
+         rx_write_en <= '1';
+
+         WHEN reg_reg_op =>
+         alu_reg_write_en <= '1';
+         alu_op <= ; -- TODO: implement ALU opcode
       END CASE;
 
    END PROCESS;
