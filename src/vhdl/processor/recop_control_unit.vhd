@@ -11,17 +11,19 @@ USE work.various_constants.ALL;
 
 ENTITY recop_control_unit IS
     PORT (
-        clk    : IN  bit_1;
-        packet : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);
-        reset  : IN  bit_1
+        clk : IN bit_1;
+        packet : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        reset : IN bit_1;
 
         -- External Signal I/O
-        SOP    : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        SIP    : IN  STD_LOGIC_VECTOR(15 DOWNTO 0);
+        SOP : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+        SIP : IN STD_LOGIC_VECTOR(15 DOWNTO 0)
 
     );
 END recop_control_unit;
 
 ARCHITECTURE bhv OF recop_control_unit IS
+
+BEGIN
 
 END bhv;
