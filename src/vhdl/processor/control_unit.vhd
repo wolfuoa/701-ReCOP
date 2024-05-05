@@ -10,7 +10,7 @@ entity control_unit is
    port (
       clock : in std_logic;
       reset : in std_logic;
-      am_mode: in std_logic_vector(1 downto 0);
+      adressing_mode : in std_logic_vector(1 downto 0);
       opcode : in std_logic_vector(5 downto 0);
       dprr : in std_logic;
       aluOp2_select : out std_logic_vector(1 downto 0);
@@ -47,34 +47,34 @@ architecture rtl of control_unit is
 begin
 
    -- TODO: implement ALU opcode 
-   ALU_OP_DECODE : process (opcode, am_mode)
+   ALU_OP_DECODE : process (opcode, adressing_mode)
    begin
 
-      case am_mode is 
-         when am_inherent  =>
-       
-
+      case adressing_mode is
+            --when am_inherent =>
 
          when am_immediate => -- Uses immediate value
-            case opcode is 
+            case opcode is
                when ldr =>
-
-
-               when str => 
-
-
-               
-
+                  alu_op <= alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
+               when str =>
+                  alu_op <= alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
+               when andr =>
+                  alu_op <= alu_and;
+               when orr =>
+                  alu_op <= alu_or;
+               when addr =>
+                  alu_op <= alu_add;
+               when subr =>
+                  alu_op <= alu_sub;
+               when subvr =>
+                  alu_op <= alu_sub;
             end case;
-
-
          when am_direct => -- Uses registeres Rx and Ry 
-
-
          when am_register => -- 
 
       end case;
-    
+
    end process;
 
    CYCLE_OUTPUT_DECODE : process (state)
@@ -99,7 +99,7 @@ begin
          aluOp1_select <= "00";
          aluOp2_select <= "00";
          zero_write_enable <= '1';
-         
+
          when reg_imm =>
          alu_reg_write_enable <= '1';
          alu_op <= decoded_ALUop;
@@ -107,7 +107,7 @@ begin
          aluOp2_select <= "00";
          zero_write_enable <= '1';
 
-         when load_imm => 
+         when load_imm =>
          pc_write_enable <= '1';
          pc_write_select <= '1';
          reg_write_select <= "00";
@@ -123,14 +123,16 @@ begin
    NEXT_STATE_DECODE : process (state)
    begin
       case(state) is
-         when instruction_fetch  =>
-         next_state <= reg_access when (opcode = (andr or orr or addr or subvr)) else load_imm; 
+         when instruction_fetch =>
+         next_state <= reg_access when (opcode = (andr or orr or addr or subvr)) else
+            load_imm;
 
-         when load_imm => 
+         when load_imm =>
          next_state <= instruction_fetch;
-         
-         when reg_access => 
-         next_state <= reg_reg when (opcode = (andr or orr or addr or subvr)) else reg_imm;
+
+         when reg_access =>
+         next_state <= reg_reg when (opcode = (andr or orr or addr or subvr)) else
+            reg_imm;
 
          when reg_reg =>
          next_state <= store_reg;
@@ -140,16 +142,17 @@ begin
 
          when store_reg =>
          next_state <= instruction_fetch;
-         
+
       end case;
-      
+
    end process;
 
    SYNC : process (clock, reset)
-   begin      
-         if (reset = '1') then
-            state <= instruction_fetch;
-         else if rising_edge(clock) then
+   begin
+      if (reset = '1') then
+         state <= instruction_fetch;
+      else
+         if rising_edge(clock) then
             state <= next_state;
          end if;
       end if;

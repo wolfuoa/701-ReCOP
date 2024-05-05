@@ -1,103 +1,102 @@
--- Zoran Salcic
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.std_logic_unsigned.ALL;
-USE ieee.std_logic_arith.ALL;
+use work.recop_types.all;
+use work.opcodes.all;
+use work.mux_select_constants.all;
+use work.alu_constants.all;
 
-USE work.recop_types.ALL;
-USE work.opcodes.ALL;
-USE work.various_constants.ALL;
+entity alu is
+    port (
+        clk : in std_logic;
+        zero : out std_logic;
 
-ENTITY alu IS
-    PORT (
-        clk           : IN  bit_1;
-        z_flag        : OUT bit_1;
         -- ALU operation selection
-        alu_operation : IN  bit_3;
-        -- operand selection
-        alu_op1_sel   : IN  bit_2;
-        alu_op2_sel   : IN  bit_1;
-        alu_carry     : IN  bit_1; --WARNING: carry in currently is not used
-        alu_result    : OUT bit_16 := X"0000";
-        -- operands
-        rx            : IN  bit_16;
-        rz            : IN  bit_16;
-        ir_operand    : IN  bit_16;
-        -- flag control signal
-        clr_z_flag    : IN  bit_1;
-        reset         : IN  bit_1
-    );
-END alu;
+        alu_operation : in std_logic_vector(2 downto 0);
 
-ARCHITECTURE combined OF alu IS
-    SIGNAL operand_1 : bit_16;
-    SIGNAL operand_2 : bit_16;
-    SIGNAL result    : bit_16;
-BEGIN
+        -- operand selection
+        alu_op1_sel : in std_logic_vector(2 downto 0);
+        alu_op2_sel : in std_logic_vector(2 downto 0);
+
+        -- External OP1 MUX inputs
+        rz : in std_logic_vector(15 downto 0);
+        immediate : in std_logic_vector(15 downto 0);
+        pc : in std_logic_vector(15 downto 0);
+
+        -- External OP2 MUX inputs
+        rx : in std_logic_vector(15 downto 0);
+
+        -- flag control signal
+        reset : in std_logic;
+
+        alu_result : out bit_16 := X"0000"
+    );
+end alu;
+
+architecture combined of alu is
+    signal operand_1 : std_logic_vector(15 downto 0);
+    signal operand_2 : std_logic_vector(15 downto 0);
+    signal result : std_logic_vector(15 downto 0);
+begin
     --MUX selecting first operand
-    op1_select : PROCESS (alu_op1_sel, rx, ir_operand)
-    BEGIN
-        CASE alu_op1_sel IS
-            WHEN "00" =>
-                operand_1 <= rx;
-            WHEN "01" =>
-                operand_1 <= ir_operand;
-            WHEN "10" => --not used currently
-                operand_1 <= X"0001";
-            WHEN OTHERS =>
+    op1_select : process (alu_op1_sel, rz, immediate, pc)
+    begin
+        case alu_op1_sel is
+            when alu_op1_rz =>
+                operand_1 <= rz;
+            when alu_op1_pc =>
+                operand_1 <= pc;
+            when alu_op1_immediate =>
+                operand_1 <= immediate;
+            when others =>
                 operand_1 <= X"0000";
-        END CASE;
-    END PROCESS op1_select;
+        end case;
+    end process op1_select;
 
     --MUX selecting second operand
-    op2_select : PROCESS (alu_op2_sel, rx, rz)
-    BEGIN
-        CASE alu_op2_sel IS
-            WHEN '0' =>
+    op2_select : process (alu_op2_sel, rx, rz)
+    begin
+        case alu_op2_sel is
+            when alu_op2_rx =>
                 operand_2 <= rx;
-            WHEN '1' =>
+            when alu_op2_zero =>
+                operand_2 <= X"0000"; -- 0
+            when alu_op2_one =>
+                operand_2 <= X"0001"; -- 1 for incrementing PC
+            when alu_op2_rz =>
                 operand_2 <= rz;
-            WHEN OTHERS =>
+            when others =>
                 operand_2 <= X"0000";
-        END CASE;
-    END PROCESS op2_select;
+        end case;
+    end process op2_select;
 
     -- perform ALU operation
-    alu : PROCESS (alu_operation, operand_1, operand_2)
-    BEGIN
-        CASE alu_operation IS
-            WHEN alu_add =>
+    alu : process (alu_operation, operand_1, operand_2)
+    begin
+        case alu_operation is
+            when alu_add =>
                 result <= operand_2 + operand_1;
-            WHEN alu_sub =>
+            when alu_sub =>
                 result <= operand_2 - operand_1;
-            WHEN alu_and =>
-                result <= operand_2 AND operand_1;
-            WHEN alu_or =>
-                result <= operand_2 OR operand_1;
-            WHEN OTHERS =>
+            when alu_and =>
+                result <= operand_2 and operand_1;
+            when alu_or =>
+                result <= operand_2 or operand_1;
+            when others =>
                 result <= X"0000";
-        END CASE;
-    END PROCESS alu;
+        end case;
+
+        -- Set zero flag
+        case result is
+            when X"0000" =>
+                zero <= '1';
+            when others =>
+                zero <= '0';
+        end case;
+    end process alu;
+
     alu_result <= result;
 
-    -- zero flag
-    z1gen : PROCESS (clk)
-    BEGIN
-        IF reset = '1' THEN
-            z_flag <= '0';
-        ELSIF rising_edge(clk) THEN
-            IF clr_z_flag = '1' THEN
-                z_flag <= '0';
-                -- if alu is working (operation is valid)
-            ELSIF alu_operation(2) = '0' THEN
-                IF result = X"0000" THEN
-                    z_flag <= '1';
-                ELSE
-                    z_flag <= '0';
-                END IF;
-            END IF;
-        END IF;
-    END PROCESS z1gen;
-
-END combined;
+end combined;
