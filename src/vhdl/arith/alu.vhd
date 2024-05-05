@@ -28,8 +28,6 @@ entity alu is
     rx            : in  std_logic_vector(15 downto 0);
 
     -- flag control signal
-    reset         : in  std_logic;
-
     alu_result    : out bit_16 := X"0000"
   );
 end entity;

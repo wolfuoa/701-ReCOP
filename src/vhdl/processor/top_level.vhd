@@ -27,7 +27,7 @@ architecture bhv of top_level is
   signal pc_branch_conditional             : std_logic;
   signal jump_select                       : std_logic;
   signal register_file_write_enable        : std_logic;
-  signal register_file_write_select        : std_logic;
+  signal register_file_write_select        : std_logic_vector(1 downto 0);
   signal register_file_rz_select           : std_logic;
   signal instruction_register_write_enable : std_logic;
   signal rz_register_write_enable          : std_logic;
@@ -42,6 +42,7 @@ architecture bhv of top_level is
   signal mdr_write_enable                  : std_logic;
   signal z_register_write_enable           : std_logic;
   signal lsip                              : std_logic;
+  signal ssop                              : std_logic;
   signal addressing_mode                   : std_logic_vector(1 downto 0);
   signal opcode                            : std_logic_vector(5 downto 0);
   signal z_register_reset                  : std_logic;
@@ -74,6 +75,7 @@ begin
       z_register_write_enable           => z_register_write_enable,
       sip_register_value_in             => sip,
       lsip                              => lsip,
+      ssop                              => ssop,
       addressing_mode                   => addressing_mode,
       opcode                            => opcode,
       z_register_reset                  => z_register_reset
@@ -85,18 +87,18 @@ begin
       reset                => reset,
       adressing_mode       => addressing_mode,
       opcode               => opcode,
-      dprr                 => (others => '0'), -- TODO
+      dprr                 => '0', -- TODO
       aluOp2_select        => alu_op2_sel,
       jump_select          => jump_select,
-      DPCRwrite_enable     => (others => '0'), -- TODO
+      DPCRwrite_enable     => '0', -- TODO
       dmr_enable           => mdr_write_enable,
       rz_write_enable      => rz_register_write_enable,
       rx_write_enable      => rx_register_write_enable,
       alu_reg_write_enable => alu_register_write_enable,
-      sop_write_enable     => (others => '0'), -- TODO
+      sop_write_enable     => '0', -- TODO
       zero_reg_reset       => z_register_reset,
       dm_write_enable      => mdr_write_enable,
-      dpcr_select          => (others => '0'), -- TODO
+      dpcr_select          => '0', -- TODO
       alu_op               => alu_op_sel,
       dm_addr_select       => data_memory_address_select,
       regfile_write_enable => register_file_write_enable,
@@ -104,7 +106,8 @@ begin
       reg_write_select     => register_file_write_select,
       zero_write_enable    => z_register_write_enable,
       sip_ld               => lsip,
-      pm_read_enable       => (others => '0'), -- TODO
+      -- TODO SOP_ST
+      pm_read_enable       => '0', -- TODO
       ir_write_enable      => instruction_register_write_enable,
       pc_write_enable      => pc_write_enable,
       pc_branch_cond       => pc_branch_conditional,

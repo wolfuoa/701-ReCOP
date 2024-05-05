@@ -11,8 +11,8 @@ entity register_file is
     write_enable          : in  std_logic;
 
     -- Rz and Rx select signals, i.e to select r12
-    rz_index              : in  integer range 0 to 15;
-    rx_index              : in  integer range 0 to 15;
+    rz_index              : in  std_logic_vector(3 downto 0);
+    rx_index              : in  std_logic_vector(3 downto 0);
 
     -- select rz from IR or r7
     rz_select             : in  std_logic;
@@ -77,12 +77,12 @@ begin
     elsif rising_edge(clock) then
       -- write data into Rz if ld signal is asserted
       if write_enable = '1' then
-        regs(temp_rz_index) <= data_input_z;
+        regs(to_integer(temp_rz_index)) <= data_input_z;
       end if;
     end if;
   end process;
 
-  rx <= regs(rx_index);
-  rz <= regs(temp_rz_index);
+  rx <= regs(to_integer(rx_index));
+  rz <= regs(to_integer(temp_rz_index));
 
 end architecture;

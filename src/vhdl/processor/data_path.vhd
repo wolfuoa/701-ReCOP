@@ -95,7 +95,7 @@ begin
   -- Calculate jump address
   with jump_select select jump_address <=
     rx_register_value_out when '1',
-    immediate             when '0';
+    immediate             when others;
 
   pc_write <= (z_register_value_out(0) and pc_branch_conditional) or pc_write_enable;
 
@@ -120,26 +120,14 @@ begin
       q       => instruction
     );
 
-  instruction_register_inst: entity work.instruction_register
-    port map (
-      clock           => clock,
-      reset           => reset,
-      write_enable    => instruction_register_write_enable,
-      instruction     => instruction,
-      addressing_mode => addressing_mode,
-      opcode          => opcode,
-      rz              => rz_index,
-      rx              => rx_index,
-      immediate       => immediate
-    );
   -- Register file
   register_file: entity work.register_file
     port map (
       clock                 => clock,
       reset                 => reset,
       write_enable          => register_file_write_enable,
-      rz_index              => integer(rz_index),
-      rx_index              => integer(rx_index),
+      rz_index              => rz_index,
+      rx_index              => rx_index,
       rz_select             => register_file_rz_select,
       register_write_select => register_file_write_select,
       immediate             => immediate,
@@ -177,7 +165,6 @@ begin
   -- ALU
   alu: entity work.alu
     port map (
-      reset         => reset,
       alu_operation => alu_op_sel,
 
       -- mux selects
@@ -191,7 +178,7 @@ begin
       rx            => rx_register_value_out,
 
       -- outputs
-      zero          => z_register_value_in,
+      zero          => z_register_value_in(0),
       alu_result    => alu_register_value_in
     );
 

@@ -38,8 +38,8 @@ begin
     x"0000"   when others;
 
   with address_select select address_in <=
-    immediate when "00",
-    rx        when "01",
+    immediate when '0',
+    rx        when '1',
     x"0000"   when others;
 
   ram: entity altera_mf.altsyncram
