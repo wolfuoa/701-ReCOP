@@ -5,10 +5,8 @@ use work.recop_types.all;
 
 package alu_constants is
 	-- * ALU operation select defined as alu_op
-	constant alu_add : bit_3 := "000";
-	constant alu_sub : bit_3 := "001";
-	constant alu_and : bit_3 := "010";
-	constant alu_or : bit_3 := "011";
-	constant alu_idle : bit_3 := "100";
-	constant alu_max : bit_3 := "101";
+	constant alu_add : std_logic_vector(1 downto 0) := "00";
+	constant alu_sub : std_logic_vector(1 downto 0) := "01";
+	constant alu_and : std_logic_vector(1 downto 0) := "10";
+	constant alu_or : std_logic_vector(1 downto 0) := "11";
 end alu_constants;

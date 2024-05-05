@@ -46,7 +46,6 @@ architecture rtl of control_unit is
    signal decoded_ALUop : std_logic_vector(2 downto 0);
 begin
 
-   -- TODO: implement ALU opcode 
    ALU_OP_DECODE : process (opcode, adressing_mode)
    begin
 
@@ -71,7 +70,26 @@ begin
                   alu_op <= alu_sub;
             end case;
          when am_direct => -- Uses registeres Rx and Ry 
-         when am_register => -- 
+            case opcode is
+               when ldr =>
+                  alu_op <= alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
+               when str =>
+                  alu_op <= alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
+               when andr =>
+                  alu_op <= alu_and;
+               when orr =>
+                  alu_op <= alu_or;
+               when addr =>
+                  alu_op <= alu_add;
+               when subr =>
+                  alu_op <= alu_sub;
+               when subvr =>
+                  alu_op <= alu_sub;
+            end case;
+            --when am_register => -- 
+
+         when others =>
+            alu_op <= "UUU";
 
       end case;
 

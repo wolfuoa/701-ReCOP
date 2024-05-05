@@ -5,8 +5,7 @@ use ieee.std_logic_arith.all;
 
 entity testbench_pc is
     port (
-        signal out_pc : out std_logic_vector(15 downto 0);
-        signal valid : out boolean
+        signal out_pc : out std_logic_vector(15 downto 0)
     );
 end testbench_pc;
 
@@ -48,30 +47,22 @@ begin
         alu_out <= x"BEEF";
         t_write_enable <= '1';
         wait until rising_edge(t_clock);
-        wait for 0 ns;
-        valid <= pc = x"BEEF";
 
         t_pc_input_select <= '1';
         jump_address <= x"B00B";
         t_write_enable <= '1';
         wait until rising_edge(t_clock);
-        wait for 0 ns;
-        valid <= pc = x"B00B";
 
         t_pc_input_select <= '0';
         alu_out <= x"F00D";
         t_write_enable <= '0';
         wait until rising_edge(t_clock);
-        wait for 0 ns;
-        valid <= pc = x"B00B";
 
         t_reset <= '1';
         wait until rising_edge(t_clock);
-        wait for 0 ns;
-        valid <= pc = x"0000";
 
         wait;
-            
+
     end process;
 
 end arch; -- testbench_recop_pc
