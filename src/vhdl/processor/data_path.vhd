@@ -40,11 +40,18 @@ entity data_path is
     data_memory_write_enable          : in  std_logic;
 
     mdr_write_enable                  : in  std_logic;
-    z_register_write_enable           : in  std_logic;
 
-    -- SIP
-    sip_register_value_in             : in  std_logic_vector(15 downto 0);
+    z_register_write_enable           : in  std_logic;
+    z_register_reset                  : in  std_logic;
+
+    --END Control unit inputs
+    -- SIP and SOP Control Signals``
     lsip                              : in  std_logic;
+    ssop                              : in  std_logic;
+
+    -- External I/O
+    sip_register_value_in             : in  std_logic_vector(15 downto 0);
+    sop_register_value_out            : out std_logic_vector(15 downto 0);
 
     -- Outputs for the control unit
     addressing_mode                   : out std_logic_vector(1 downto 0);
@@ -75,6 +82,7 @@ architecture bhv of data_path is
   signal alu_register_value_out : std_logic_vector(15 downto 0);
 
   signal sip_register_value_out : std_logic_vector(15 downto 0);
+  signal sop_register_value_in  : std_logic_vector(15 downto 0);
 
   signal mdr_value_in  : std_logic_vector(15 downto 0);
   signal mdr_value_out : std_logic_vector(15 downto 0);
@@ -234,7 +242,7 @@ begin
     )
     port map (
       clock        => clock,
-      reset        => reset,
+      reset        => z_register_reset,
       write_enable => z_register_write_enable,
       data_in      => z_register_value_in,
       data_out     => z_register_value_out
@@ -251,5 +259,17 @@ begin
       write_enable => lsip,
       data_in      => sip_register_value_in,
       data_out     => sip_register_value_out
+    );
+
+  register_buffer_inst: entity work.register_buffer
+    generic map (
+      width => 16
+    )
+    port map (
+      clock        => clock,
+      reset        => reset,
+      write_enable => ssop,
+      data_in      => sop_register_value_in,
+      data_out     => sop_register_value_out
     );
 end architecture;
