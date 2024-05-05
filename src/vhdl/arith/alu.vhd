@@ -1,43 +1,46 @@
 library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.std_logic_unsigned.all;
-  use ieee.std_logic_arith.all;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 
-  use work.recop_types.all;
-  use work.opcodes.all;
-  use work.mux_select_constants.all;
-  use work.alu_constants.all;
+use work.recop_types.all;
+use work.opcodes.all;
+use work.mux_select_constants.all;
+use work.alu_ops.all;
 
 entity alu is
   port (
-    zero          : out std_logic;
+    zero : out std_logic;
 
     -- ALU operation selection
-    alu_operation : in  std_logic_vector(1 downto 0);
+    alu_operation : in std_logic_vector(2 downto 0);
 
     -- operand selection
-    alu_op1_sel   : in  std_logic_vector(1 downto 0);
-    alu_op2_sel   : in  std_logic_vector(1 downto 0);
+    alu_op1_sel : in std_logic_vector(2 downto 0);
+    alu_op2_sel : in std_logic_vector(2 downto 0);
 
     -- External OP1 MUX inputs
-    rz            : in  std_logic_vector(15 downto 0);
-    immediate     : in  std_logic_vector(15 downto 0);
-    pc            : in  std_logic_vector(15 downto 0);
+    rz : in std_logic_vector(15 downto 0);
+    immediate : in std_logic_vector(15 downto 0);
+    pc : in std_logic_vector(15 downto 0);
 
     -- External OP2 MUX inputs
-    rx            : in  std_logic_vector(15 downto 0);
+    rx : in std_logic_vector(15 downto 0);
 
-    alu_result    : out bit_16 := X"0000"
+    -- flag control signal
+    reset : in std_logic;
+
+    alu_result : out bit_16 := X"0000"
   );
-end entity;
+end alu;
 
 architecture combined of alu is
   signal operand_1 : std_logic_vector(15 downto 0);
   signal operand_2 : std_logic_vector(15 downto 0);
-  signal result    : std_logic_vector(15 downto 0);
+  signal result : std_logic_vector(15 downto 0);
 begin
   --MUX selecting first operand
-  op1_select: process (alu_op1_sel, rz, immediate, pc)
+  op1_select : process (alu_op1_sel, rz, immediate, pc)
   begin
     case alu_op1_sel is
       when alu_op1_rz =>
@@ -49,11 +52,10 @@ begin
       when others =>
         operand_1 <= X"0000";
     end case;
-  end process;
+  end process op1_select;
 
   --MUX selecting second operand
-
-  op2_select: process (alu_op2_sel, rx, rz)
+  op2_select : process (alu_op2_sel, rx, rz)
   begin
     case alu_op2_sel is
       when alu_op2_rx =>
@@ -67,11 +69,10 @@ begin
       when others =>
         operand_2 <= X"0000";
     end case;
-  end process;
+  end process op2_select;
 
   -- perform ALU operation
-
-  alu: process (alu_operation, operand_1, operand_2)
+  alu : process (alu_operation, operand_1, operand_2)
   begin
     case alu_operation is
       when alu_add =>
@@ -93,8 +94,8 @@ begin
       when others =>
         zero <= '0';
     end case;
-  end process;
+  end process alu;
 
   alu_result <= result;
 
-end architecture;
+end combined;
