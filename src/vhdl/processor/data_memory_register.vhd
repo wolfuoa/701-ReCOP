@@ -3,7 +3,8 @@ use ieee.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 entity data_memory_register is
-    port (
+    port
+    (
         clock        : in  std_logic;
         reset        : in  std_logic;
         write_enable : in  std_logic;

@@ -9,52 +9,52 @@ use work.mux_select_constants;
 
 entity data_path is
     port (
-        clock : in std_logic;
-        packet : in std_logic_vector(31 downto 0);
-        reset : in std_logic;
+        clock                             : in  std_logic;
+        packet                            : in  std_logic_vector(31 downto 0);
+        reset                             : in  std_logic;
 
         -- Control unit inputs
-        pc_write_enable : in std_logic;
-        pc_input_select : in std_logic;
-        instruction_register_write_enable : in std_logic;
-        rz_register_write_enable : in std_logic;
-        rx_register_write_enable : in std_logic;
-        alu_register_write_enable : in std_logic;
-        mdr_write_enable : in std_logic;
-        z_register_write_enable : in std_logic;
+        pc_write_enable                   : in  std_logic;
+        pc_input_select                   : in  std_logic;
+        instruction_register_write_enable : in  std_logic;
+        rz_register_write_enable          : in  std_logic;
+        rx_register_write_enable          : in  std_logic;
+        alu_register_write_enable         : in  std_logic;
+        mdr_write_enable                  : in  std_logic;
+        z_register_write_enable           : in  std_logic;
 
         -- Outputs for the control unit
-        addressing_mode : out std_logic_vector(1 downto 0);
-        opcode : out std_logic_vector(5 downto 0)
+        addressing_mode                   : out std_logic_vector(1 downto 0);
+        opcode                            : out std_logic_vector(5 downto 0)
     );
 end data_path;
 
 -- 
 
 architecture bhv of data_path is
-    signal jump_address : std_logic_vector(15 downto 0);
-    signal alu_out : std_logic_vector(15 downto 0);
-    signal pc : std_logic_vector(15 downto 0);
+    signal jump_address           : std_logic_vector(15 downto 0);
+    signal alu_out                : std_logic_vector(15 downto 0);
+    signal pc                     : std_logic_vector(15 downto 0);
 
-    signal instruction : std_logic_vector(31 downto 0);
-    signal rz_index : std_logic_vector(3 downto 0);
-    signal rx_index : std_logic_vector(3 downto 0);
-    signal immediate : std_logic_vector(15 downto 0);
+    signal instruction            : std_logic_vector(31 downto 0);
+    signal rz_index               : std_logic_vector(3 downto 0);
+    signal rx_index               : std_logic_vector(3 downto 0);
+    signal immediate              : std_logic_vector(15 downto 0);
 
-    signal rz_register_value_in : std_logic_vector(15 downto 0);
-    signal rx_register_value_in : std_logic_vector(15 downto 0);
+    signal rz_register_value_in   : std_logic_vector(15 downto 0);
+    signal rx_register_value_in   : std_logic_vector(15 downto 0);
 
-    signal rz_register_value_out : std_logic_vector(15 downto 0);
-    signal rx_register_value_out : std_logic_vector(15 downto 0);
+    signal rz_register_value_out  : std_logic_vector(15 downto 0);
+    signal rx_register_value_out  : std_logic_vector(15 downto 0);
 
-    signal alu_register_value_in : std_logic_vector(15 downto 0);
+    signal alu_register_value_in  : std_logic_vector(15 downto 0);
     signal alu_register_value_out : std_logic_vector(15 downto 0);
 
-    signal mdr_value_in : std_logic_vector(15 downto 0);
-    signal mdr_value_out : std_logic_vector(15 downto 0);
+    signal mdr_value_in           : std_logic_vector(15 downto 0);
+    signal mdr_value_out          : std_logic_vector(15 downto 0);
 
-    signal z_register_value_in : std_logic_vector(0 downto 0);
-    signal z_register_value_out : std_logic_vector(0 downto 0);
+    signal z_register_value_in    : std_logic_vector(0 downto 0);
+    signal z_register_value_out   : std_logic_vector(0 downto 0);
 
 begin
 
@@ -63,51 +63,51 @@ begin
             START_ADDR => (others => '0')
         )
         port map(
-            clock => clock,
-            reset => reset,
-            write_enable => pc_write_enable,
+            clock           => clock,
+            reset           => reset,
+            write_enable    => pc_write_enable,
             pc_input_select => pc_input_select,
-            jump_address => jump_address,
-            alu_out => alu_out,
-            pc => pc
+            jump_address    => jump_address,
+            alu_out         => alu_out,
+            pc              => pc
         );
 
     prog_mem_inst : entity work.prog_mem
         port map(
             address => pc,
-            clock => clock,
-            q => instruction
+            clock   => clock,
+            q       => instruction
         );
 
     instruction_register_inst : entity work.instruction_register
         port map(
-            clock => clock,
-            reset => reset,
-            write_enable => instruction_register_write_enable,
-            instruction => instruction,
+            clock           => clock,
+            reset           => reset,
+            write_enable    => instruction_register_write_enable,
+            instruction     => instruction,
             addressing_mode => addressing_mode,
-            opcode => opcode,
-            rz => rz_index,
-            rx => rx_index,
-            immediate => immediate
+            opcode          => opcode,
+            rz              => rz_index,
+            rx              => rx_index,
+            immediate       => immediate
         );
     -- Register file
 
     register_file : entity work.register_file
         port map(
-            clock => clock,
-            reset => reset,
-            write_enable => write_enable,
-            rz_index => rz_index,
-            rx_index => rx_index,
-            rz_select => rz_select,
+            clock                 => clock,
+            reset                 => reset,
+            write_enable          => write_enable,
+            rz_index              => rz_index,
+            rx_index              => rx_index,
+            rz_select             => rz_select,
             register_write_select => register_write_select,
-            immediate => immediate,
-            data_memory => data_memory,
-            alu_out => alu_out,
-            sip => sip,
-            rx => rx,
-            rz => rz
+            immediate             => immediate,
+            data_memory           => data_memory,
+            alu_out               => alu_out,
+            sip                   => sip,
+            rx                    => rx,
+            rz                    => rz
         );
     -- Operand Registers
 
@@ -116,11 +116,11 @@ begin
             width => 16
         )
         port map(
-            clock => clock,
-            reset => reset,
+            clock        => clock,
+            reset        => reset,
             write_enable => rx_register_write_enable,
-            data_in => rx_register_value_in,
-            data_out => rx_register_value_out
+            data_in      => rx_register_value_in,
+            data_out     => rx_register_value_out
         );
 
     rz_register : entity work.register_buffer
@@ -128,27 +128,27 @@ begin
             width => 16
         )
         port map(
-            clock => clock,
-            reset => reset,
+            clock        => clock,
+            reset        => reset,
             write_enable => rz_register_write_enable,
-            data_in => rz_register_value_in,
-            data_out => rz_register_value_out
+            data_in      => rz_register_value_in,
+            data_out     => rz_register_value_out
         );
 
     -- ALU
 
     alu : entity work.alu
         port map(
-            zero => zero,
+            zero          => zero,
             alu_operation => alu_operation,
-            alu_op1_sel => alu_op1_sel,
-            alu_op2_sel => alu_op2_sel,
-            rz => rz,
-            immediate => immediate,
-            pc => pc,
-            rx => rx,
-            reset => reset,
-            alu_result => alu_result
+            alu_op1_sel   => alu_op1_sel,
+            alu_op2_sel   => alu_op2_sel,
+            rz            => rz,
+            immediate     => immediate,
+            pc            => pc,
+            rx            => rx,
+            reset         => reset,
+            alu_result    => alu_result
         );
 
     -- ALU Reg
@@ -158,37 +158,37 @@ begin
             width => 16
         )
         port map(
-            clock => clock,
-            reset => reset,
+            clock        => clock,
+            reset        => reset,
             write_enable => alu_register_write_enable,
-            data_in => alu_register_value_in,
-            data_out => alu_register_value_out
+            data_in      => alu_register_value_in,
+            data_out     => alu_register_value_out
         );
 
     -- Data Memory
 
     data_memory : entity work.data_memory
         port map(
-            clock => clock,
-            reset => reset,
-            data_in => data_in,
+            clock        => clock,
+            reset        => reset,
+            data_in      => data_in,
             write_enable => write_enable,
-            address => address,
-            data_out => mdr_value_in
+            address      => address,
+            data_out     => mdr_value_in
         );
 
     -- MDR
 
-    mdr : entity work.register_buffer
-        generic map(
-            width => 16
-        )
+    mdr : entity work.data_memory_register
         port map(
-            clock => clock,
-            reset => reset,
-            write_enable => mdr_write_enable,
-            data_in => mdr_value_in,
-            data_out => mdr_value_out
+            clock        => clock,
+            reset        => reset,
+            write_enable => write_enable,
+            input_select => input_select,
+            immediate    => immediate,
+            alu_out      => alu_out,
+            rx           => rx,
+            data_out     => data_out
         );
 
     z_register : entity work.register_buffer
@@ -196,10 +196,10 @@ begin
             width => 1
         )
         port map(
-            clock => clock,
-            reset => reset,
+            clock        => clock,
+            reset        => reset,
             write_enable => z_register_write_enable,
-            data_in => z_register_value_in,
-            data_out => z_register_value_out
+            data_in      => z_register_value_in,
+            data_out     => z_register_value_out
         );
 end bhv;
