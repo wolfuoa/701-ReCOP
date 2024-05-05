@@ -34,6 +34,11 @@ entity data_path is
     alu_op2_sel                       : in  std_logic_vector(1 downto 0);
     alu_op_sel                        : in  std_logic_vector(1 downto 0);
 
+    -- Data Memory
+    data_memory_data_select           : in  std_logic_vector(1 downto 0);
+    data_memory_address_select        : in  std_logic;
+    data_memory_write_enable          : in  std_logic;
+
     mdr_write_enable                  : in  std_logic;
     z_register_write_enable           : in  std_logic;
 
@@ -196,14 +201,17 @@ begin
     );
 
   -- Data Memory
-  data_memory: entity work.data_memory
+  data_memory_inst: entity work.data_memory
     port map (
-      clock        => clock,
-      reset        => reset,
-      data_in      => data_in,
-      write_enable => write_enable,
-      address      => address,
-      data_out     => mdr_value_in
+      clock          => clock,
+      reset          => reset,
+      input_select   => data_memory_data_select,
+      immediate      => immediate,
+      alu_out        => alu_register_value_out,
+      rx             => rx_register_value_out,
+      write_enable   => data_memory_write_enable,
+      address_select => data_memory_address_select,
+      data_out       => mdr_value_in
     );
 
   -- MDR
@@ -219,6 +227,7 @@ begin
       data_out     => mdr_value_out
     );
 
+  -- Zero register
   z_register: entity work.register_buffer
     generic map (
       width => 1
