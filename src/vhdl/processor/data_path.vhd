@@ -9,10 +9,6 @@ use work.mux_select_constants;
 
 entity data_path is
     port (
-    clock  : in std_logic;
-    packet : in std_logic_vector(31 downto 0);
-    reset  : in std_logic;
-    port (
         clock                             : in  std_logic;
         packet                            : in  std_logic_vector(31 downto 0);
         reset                             : in  std_logic;
@@ -24,6 +20,7 @@ entity data_path is
 
         jump_select                       : in  std_logic;
 
+        register_file_write_enable        : in  std_logic;
         instruction_register_write_enable : in  std_logic;
         rz_register_write_enable          : in  std_logic;
         rx_register_write_enable          : in  std_logic;
@@ -50,33 +47,19 @@ architecture bhv of data_path is
     signal rz_index               : std_logic_vector(3 downto 0);
     signal rx_index               : std_logic_vector(3 downto 0);
     signal immediate              : std_logic_vector(15 downto 0);
-    signal instruction            : std_logic_vector(31 downto 0);
-    signal rz_index               : std_logic_vector(3 downto 0);
-    signal rx_index               : std_logic_vector(3 downto 0);
-    signal immediate              : std_logic_vector(15 downto 0);
 
-    signal rz_register_value_in   : std_logic_vector(15 downto 0);
-    signal rx_register_value_in   : std_logic_vector(15 downto 0);
     signal rz_register_value_in   : std_logic_vector(15 downto 0);
     signal rx_register_value_in   : std_logic_vector(15 downto 0);
 
     signal rz_register_value_out  : std_logic_vector(15 downto 0);
     signal rx_register_value_out  : std_logic_vector(15 downto 0);
-    signal rz_register_value_out  : std_logic_vector(15 downto 0);
-    signal rx_register_value_out  : std_logic_vector(15 downto 0);
 
-    signal alu_register_value_in  : std_logic_vector(15 downto 0);
-    signal alu_register_value_out : std_logic_vector(15 downto 0);
     signal alu_register_value_in  : std_logic_vector(15 downto 0);
     signal alu_register_value_out : std_logic_vector(15 downto 0);
 
     signal mdr_value_in           : std_logic_vector(15 downto 0);
     signal mdr_value_out          : std_logic_vector(15 downto 0);
-    signal mdr_value_in           : std_logic_vector(15 downto 0);
-    signal mdr_value_out          : std_logic_vector(15 downto 0);
 
-    signal z_register_value_in    : std_logic_vector(0 downto 0);
-    signal z_register_value_out   : std_logic_vector(0 downto 0);
     signal z_register_value_in    : std_logic_vector(0 downto 0);
     signal z_register_value_out   : std_logic_vector(0 downto 0);
 
@@ -87,14 +70,7 @@ begin
                                            rx_register_value_out when '1',
                                            immediate when '0';
 
-    pc_write                             <= (z_register_value_out(0) and pc_branch_conditional) or pc_write_enable;
-
-    -- Calculate jump address
-    with jump_select select jump_address <=
-                                           rx_register_value_out when '1',
-                                           immediate when '0';
-
-    pc_write <= (z_register_value_out and pc_branch_conditional) or pc_write_enable;
+    pc_write <= (z_register_value_out(0) and pc_branch_conditional) or pc_write_enable;
 
     pc_inst : entity work.pc
         generic map(
@@ -110,12 +86,6 @@ begin
             pc              => pc
         );
 
-    prog_mem_inst : entity work.prog_mem
-        port map(
-            address => pc,
-            clock   => clock,
-            q       => instruction
-        );
     prog_mem_inst : entity work.prog_mem
         port map(
             address => pc,
@@ -140,7 +110,7 @@ begin
         port map(
             clock                 => clock,
             reset                 => reset,
-            write_enable          => write_enable,
+            write_enable          => register_file_write_enable,
             rz_index              => rz_index,
             rx_index              => rx_index,
             rz_select             => rz_select,
