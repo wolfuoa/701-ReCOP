@@ -85,20 +85,20 @@ begin
     port map (
       clock                => clock,
       reset                => reset,
-      adressing_mode       => addressing_mode,
+      addressing_mode      => addressing_mode,
       opcode               => opcode,
-      dprr                 => '0', -- TODO
+      dprr                 => '0',  -- TODO
       aluOp2_select        => alu_op2_sel,
       jump_select          => jump_select,
-      DPCRwrite_enable     => '0', -- TODO
+      DPCRwrite_enable     => open, -- TODO
       dmr_enable           => mdr_write_enable,
       rz_write_enable      => rz_register_write_enable,
       rx_write_enable      => rx_register_write_enable,
       alu_reg_write_enable => alu_register_write_enable,
-      sop_write_enable     => '0', -- TODO
+      sop_write_enable     => open, -- TODO
       zero_reg_reset       => z_register_reset,
       dm_write_enable      => mdr_write_enable,
-      dpcr_select          => '0', -- TODO
+      dpcr_select          => open, -- TODO
       alu_op               => alu_op_sel,
       dm_addr_select       => data_memory_address_select,
       regfile_write_enable => register_file_write_enable,
@@ -107,11 +107,12 @@ begin
       zero_write_enable    => z_register_write_enable,
       sip_ld               => lsip,
       -- TODO SOP_ST
-      pm_read_enable       => '0', -- TODO
+      pm_read_enable       => open, -- TODO
       ir_write_enable      => instruction_register_write_enable,
       pc_write_enable      => pc_write_enable,
       pc_branch_cond       => pc_branch_conditional,
-      pc_write_select      => pc_input_select
+      pc_write_select      => pc_input_select,
+      enable               => enable
     );
 
 end architecture;
