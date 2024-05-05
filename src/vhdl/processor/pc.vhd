@@ -4,8 +4,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-use work.various_constants.all;
-
+use work.mux_select_constants.all;
 entity pc is
     generic (
         START_ADDR : std_logic_vector(15 downto 0) := (others => '0')
