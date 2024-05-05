@@ -7,7 +7,11 @@ package mux_select_constants is
    constant pc_input_select_aluout : std_logic := '0';
    constant pc_input_select_jmp : std_logic := '1';
 
-   -- Instruction register
+   -- Instruction register write
+   constant regfile_write_immediate : std_logic_vector(1 downto 0) := "00";
+   constant regfile_write_aluout : std_logic_vector(1 downto 0) := "00";
+   constant regfile_write_mdr : std_logic_vector(1 downto 0) := "00";
+   constant regfile_write_sip : std_logic_vector(1 downto 0) := "00";
 
    -- ALU
    -- OP1

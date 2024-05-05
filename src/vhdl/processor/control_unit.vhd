@@ -10,8 +10,9 @@ use work.mux_select_constants;
 entity control_unit is
    port (
       clock : in std_logic;
+      enable : in std_logic;
       reset : in std_logic;
-      adressing_mode : in std_logic_vector(1 downto 0);
+      addressing_mode : in std_logic_vector(1 downto 0);
       opcode : in std_logic_vector(5 downto 0);
       dprr : in std_logic;
       aluOp2_select : out std_logic_vector(1 downto 0);
@@ -26,7 +27,7 @@ entity control_unit is
       dm_write_enable : out std_logic;
       dpcr_select : out std_logic;
       alu_op : out std_logic_vector(1 downto 0);
-      dm_addr_select : out std_logic_vector(1 downto 0);
+      dm_addr_select : out std_logic;
       regfile_write_enable : out std_logic;
       aluOp1_select : out std_logic_vector(1 downto 0);
       reg_write_select : out std_logic_vector(1 downto 0);
@@ -36,7 +37,9 @@ entity control_unit is
       ir_write_enable : out std_logic;
       pc_write_enable : out std_logic;
       pc_branch_cond : out std_logic;
-      pc_write_select : out std_logic
+      pc_write_select : out std_logic;
+
+      state_decode_fail : out std_logic
    );
 
 end entity control_unit;
@@ -47,57 +50,54 @@ architecture rtl of control_unit is
    signal decoded_ALUop : std_logic_vector(1 downto 0);
 begin
 
-   ALU_OP_DECODE : process (opcode, adressing_mode)
+   -- Defaults for outputs (for copying)
+   -- jump_select <= '0';
+   -- DPCRwrite_enable <= '0';
+   -- dmr_enable <= '0';
+   -- rz_write_enable <= '0';
+   -- rx_write_enable <= '0';
+   -- alu_reg_write_enable <= '0'; 
+   -- sop_write_enable <= '0';
+   -- zero_reg_reset <= '0';
+   -- dm_write_enable <= '0';
+   -- dpcr_select <= '0';
+   -- alu_op <= "00"; 
+   -- dm_addr_select <= '0';
+   -- regfile_write_enable <= '0';
+   -- aluOp1_select <= "00";
+   -- aluOp2_select <= "00";
+   -- reg_write_select <= "00";
+   -- zero_write_enable <= '0';
+   -- sip_ld <= '0';
+   -- pm_read_enable <= '0';
+   -- ir_write_enable <= '0';
+   -- pc_write_enable <= '0';
+   -- pc_branch_cond <= '0';
+   -- pc_write_select <= '0';
+
+   with opcode select
+      decoded_ALUop <= alu_ops.alu_and when andr,
+      alu_ops.alu_add when orr,
+      alu_ops.alu_add when addr,
+      alu_ops.alu_sub when subr,
+      alu_ops.alu_sub when subvr,
+      alu_ops.alu_add when others;
+
+   ALU_OP_DECODE : process (opcode)
    begin
-
-      case adressing_mode is
-            --when am_inherent =>
-
-         when am_immediate => -- Uses immediate value
-            case opcode is
-               when ldr =>
-                  decoded_ALUop <= alu_ops.alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
-               when str =>
-                  decoded_ALUop <= alu_ops.alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
-               when andr =>
-                  decoded_ALUop <= alu_ops.alu_and;
-               when orr =>
-                  decoded_ALUop <= alu_ops.alu_or;
-               when addr =>
-                  decoded_ALUop <= alu_ops.alu_add;
-               when subr =>
-                  decoded_ALUop <= alu_ops.alu_sub;
-               when subvr =>
-                  decoded_ALUop <= alu_ops.alu_sub;
-               when others =>
-                  decoded_ALUop <= "UU";
-                  assert false;
-            end case;
-         when am_direct => -- Uses registeres Rx and Ry 
-            case opcode is
-               when ldr =>
-                  decoded_ALUop <= alu_ops.alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
-               when str =>
-                  decoded_ALUop <= alu_ops.alu_add; -- * Doesn't matter as ALU is bypassed into Data Memory
-               when andr =>
-                  decoded_ALUop <= alu_ops.alu_and;
-               when orr =>
-                  decoded_ALUop <= alu_ops.alu_or;
-               when addr =>
-                  decoded_ALUop <= alu_ops.alu_add;
-               when subr =>
-                  decoded_ALUop <= alu_ops.alu_sub;
-               when subvr =>
-                  decoded_ALUop <= alu_ops.alu_sub;
-               when others =>
-                  decoded_ALUop <= "UU";
-                  assert false;
-            end case;
-            --when am_register => -- 
-
+      case opcode is
+         when andr =>
+            decoded_ALUop <= alu_ops.alu_and;
+         when orr =>
+            decoded_ALUop <= alu_ops.alu_or;
+         when addr =>
+            decoded_ALUop <= alu_ops.alu_add;
+         when subr =>
+            decoded_ALUop <= alu_ops.alu_sub;
+         when subvr =>
+            decoded_ALUop <= alu_ops.alu_sub;
          when others =>
-            decoded_ALUop <= "UU";
-
+            decoded_ALUop <= "00";
       end case;
 
    end process;
@@ -106,88 +106,203 @@ begin
    begin
       case(state) is
          when instruction_fetch =>
-         ir_write_enable <= '1';
-         pm_read_enable <= '1';
-         alu_op <= alu_ops.alu_add;
-         aluOp1_select <= mux_select_constants.alu_op1_pc;
-         aluOp2_select <= mux_select_constants.alu_op2_one;
-         alu_reg_write_enable <= '1';
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '0';
+         rx_write_enable <= '0';
+         alu_reg_write_enable <= '1'; -- changed
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= alu_ops.alu_add; -- changed
+         dm_addr_select <= '0';
+         regfile_write_enable <= '0';
+         aluOp1_select <= mux_select_constants.alu_op1_pc; -- changed
+         aluOp2_select <= mux_select_constants.alu_op2_one; -- changed
+         reg_write_select <= "00";
+         zero_write_enable <= '0';
+         sip_ld <= '0';
+         pm_read_enable <= '1'; -- changed
+         ir_write_enable <= '1'; -- changed
+         pc_write_enable <= '0';
+         pc_branch_cond <= '0';
+         pc_write_select <= '0';
 
          when reg_access =>
-         pc_write_enable <= '1';
-         pc_write_select <= '1';
-         rz_write_enable <= '1';
-         rx_write_enable <= '1';
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '1'; -- changed
+         rx_write_enable <= '1'; -- changed
+         alu_reg_write_enable <= '0';
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= "00";
+         dm_addr_select <= '0';
+         regfile_write_enable <= '0';
+         aluOp1_select <= "00";
+         aluOp2_select <= "00";
+         reg_write_select <= "00";
+         zero_write_enable <= '0';
+         sip_ld <= '0';
+         pm_read_enable <= '0';
+         ir_write_enable <= '0';
+         pc_write_enable <= '1'; -- changed
+         pc_branch_cond <= '0';
+         pc_write_select <= '0'; -- changed
 
          when reg_reg =>
-         alu_reg_write_enable <= '1';
-         alu_op <= decoded_ALUop;
-         aluOp1_select <= mux_select_constants.alu_op1_rz;
-         aluOp2_select <= mux_select_constants.alu_op2_rx;
-         zero_write_enable <= '1';
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '0';
+         rx_write_enable <= '0';
+         alu_reg_write_enable <= '1'; -- changed 
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= decoded_ALUop; -- changed
+         dm_addr_select <= '0';
+         regfile_write_enable <= '0';
+         aluOp1_select <= mux_select_constants.alu_op1_rz; -- changed
+         aluOp2_select <= mux_select_constants.alu_op2_rx; -- changed
+         reg_write_select <= "00";
+         zero_write_enable <= '1'; -- changed
+         sip_ld <= '0';
+         pm_read_enable <= '0';
+         ir_write_enable <= '0';
+         pc_write_enable <= '0';
+         pc_branch_cond <= '0';
+         pc_write_select <= '0';
 
          when reg_imm =>
-         alu_reg_write_enable <= '1';
-         alu_op <= decoded_ALUop;
-         aluOp1_select <= mux_select_constants.alu_op1_immediate;
-         aluOp2_select <= mux_select_constants.alu_op2_rx;
-         zero_write_enable <= '1';
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '0';
+         rx_write_enable <= '0';
+         alu_reg_write_enable <= '1'; -- changed 
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= decoded_ALUop; -- changed
+         dm_addr_select <= '0';
+         regfile_write_enable <= '0';
+         aluOp1_select <= mux_select_constants.alu_op1_immediate; -- changed
+         aluOp2_select <= mux_select_constants.alu_op2_rx; -- changed
+         reg_write_select <= "00";
+         zero_write_enable <= '1'; -- changed
+         sip_ld <= '0';
+         pm_read_enable <= '0';
+         ir_write_enable <= '0';
+         pc_write_enable <= '0';
+         pc_branch_cond <= '0';
+         pc_write_select <= '0';
 
          when load_imm =>
-         pc_write_enable <= '1';
-         pc_write_select <= '1';
-         reg_write_select <= "00";
-         regfile_write_enable <= '1';
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '0';
+         rx_write_enable <= '0';
+         alu_reg_write_enable <= '0';
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= "00";
+         dm_addr_select <= '0';
+         regfile_write_enable <= '1'; -- changed
+         aluOp1_select <= "00";
+         aluOp2_select <= "00";
+         reg_write_select <= mux_select_constants.regfile_write_immediate; -- changed
+         zero_write_enable <= '0';
+         sip_ld <= '0';
+         pm_read_enable <= '0';
+         ir_write_enable <= '0';
+         pc_write_enable <= '1'; -- changed
+         pc_branch_cond <= '0';
+         pc_write_select <= '0'; -- changed
 
          when store_reg =>
-         regfile_write_enable <= '1';
-         reg_write_select <= "01";
-
-         when others =>
-         -- TODO: Set everything to 0
-         assert false;
+         jump_select <= '0';
+         DPCRwrite_enable <= '0';
+         dmr_enable <= '0';
+         rz_write_enable <= '0';
+         rx_write_enable <= '0';
+         alu_reg_write_enable <= '0';
+         sop_write_enable <= '0';
+         zero_reg_reset <= '0';
+         dm_write_enable <= '0';
+         dpcr_select <= '0';
+         alu_op <= "00";
+         dm_addr_select <= '0';
+         regfile_write_enable <= '1'; -- changed
+         aluOp1_select <= "00";
+         aluOp2_select <= "00";
+         reg_write_select <= mux_select_constants.regfile_write_aluout; -- changed
+         zero_write_enable <= '0';
+         sip_ld <= '0';
+         pm_read_enable <= '0';
+         ir_write_enable <= '0';
+         pc_write_enable <= '0';
+         pc_branch_cond <= '0';
+         pc_write_select <= '0';
       end case;
 
    end process;
 
-   NEXT_STATE_DECODE : process (state)
+   NEXT_STATE_DECODE : process (state, opcode, addressing_mode)
    begin
-      case(state) is
+      case state is
          when instruction_fetch =>
-         if opcode = andr or
-            opcode = orr or
-            opcode = addr or
-            opcode = subvr then
-            next_state <= reg_access;
-         else
-            next_state <= load_imm;
-         end if;
+            if (opcode = andr) or
+               (opcode = orr) or
+               (opcode = addr) or
+               (opcode = subvr) then
+               state_decode_fail <= '0';
+               next_state <= reg_access;
+            elsif (opcode = ldr) and (addressing_mode = am_immediate) then
+               state_decode_fail <= '0';
+               next_state <= load_imm;
+            else
+               state_decode_fail <= '1';
+               next_state <= instruction_fetch;
+            end if;
 
          when load_imm =>
-         next_state <= instruction_fetch;
+            state_decode_fail <= '0';
+            next_state <= instruction_fetch;
 
          when reg_access =>
-         if opcode = andr or
-            opcode = orr or
-            opcode = addr or
-            opcode = subvr then
-            next_state <= reg_reg;
-         else
-            next_state <= reg_imm;
-         end if;
+            if addressing_mode = am_direct then
+               state_decode_fail <= '0';
+               next_state <= reg_reg;
+            elsif addressing_mode = am_immediate then
+               state_decode_fail <= '0';
+               next_state <= reg_imm;
+            else 
+               state_decode_fail <= '1';
+               next_state <= instruction_fetch;
+            end if;
 
          when reg_reg =>
-         next_state <= store_reg;
+            state_decode_fail <= '0';
+            next_state <= store_reg;
 
          when reg_imm =>
-         next_state <= store_reg;
+            state_decode_fail <= '0';
+            next_state <= store_reg;
 
          when store_reg =>
-         next_state <= instruction_fetch;
-
-         when others =>
-         assert false;
-
+            state_decode_fail <= '0';
+            next_state <= instruction_fetch;
       end case;
 
    end process;
@@ -196,8 +311,8 @@ begin
    begin
       if (reset = '1') then
          state <= instruction_fetch;
-      else
-         if rising_edge(clock) then
+      elsif rising_edge(clock) then
+         if enable = '1' then
             state <= next_state;
          end if;
       end if;

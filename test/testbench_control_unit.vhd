@@ -20,7 +20,7 @@ entity testbench_control_unit is
       t_dm_write_enable : out std_logic;
       t_dpcr_select : out std_logic;
       t_alu_op : out std_logic_vector(1 downto 0);
-      t_dm_addr_select : out std_logic_vector(1 downto 0);
+      t_dm_addr_select : out std_logic;
       t_regfile_write_enable : out std_logic;
       t_aluOp1_select : out std_logic_vector(1 downto 0);
       t_reg_write_select : out std_logic_vector(1 downto 0);
@@ -30,14 +30,16 @@ entity testbench_control_unit is
       t_ir_write_enable : out std_logic;
       t_pc_write_enable : out std_logic;
       t_pc_branch_cond : out std_logic;
-      t_pc_write_select : out std_logic
+      t_pc_write_select : out std_logic;
+      t_state_decode_fail : out std_logic
    );
 end entity;
 
 architecture test of testbench_control_unit is
    signal t_clock : std_logic := '0';
+   signal t_enable : std_logic := '1';
    signal t_reset : std_logic;
-   signal t_adressing_mode : std_logic_vector(1 downto 0);
+   signal t_addressing_mode : std_logic_vector(1 downto 0);
    signal t_opcode : std_logic_vector(5 downto 0);
    signal t_dprr : std_logic;
 
@@ -45,8 +47,9 @@ begin
    DUT : entity work.control_unit
       port map(
          clock => t_clock,
+         enable => t_enable,
          reset => t_reset,
-         adressing_mode => t_adressing_mode,
+         addressing_mode => t_addressing_mode,
          opcode => t_opcode,
          dprr => t_dprr,
          aluOp2_select => t_aluOp2_select,
@@ -71,7 +74,9 @@ begin
          ir_write_enable => t_ir_write_enable,
          pc_write_enable => t_pc_write_enable,
          pc_branch_cond => t_pc_branch_cond,
-         pc_write_select => t_pc_write_select
+         pc_write_select => t_pc_write_select,
+
+         state_decode_fail => t_state_decode_fail
       );
 
    -- * Generating Signals
@@ -80,23 +85,30 @@ begin
    process
    begin
       wait for 10 ns;
-      t_clock <= '1';
-      wait for 10 ns;
       t_clock <= '0';
+      wait for 10 ns;
+      t_clock <= '1';
    end process;
 
    -- Opcode 
    process
    begin
       t_opcode <= opcodes.andr;
-      t_adressing_mode <= opcodes.am_register;
+      t_addressing_mode <= opcodes.am_direct;
       wait for 10 ns;
       wait until rising_edge(t_pm_read_enable);
 
       t_opcode <= opcodes.subvr;
-      t_adressing_mode <= opcodes.am_immediate;
+      t_addressing_mode <= opcodes.am_immediate;
       wait for 10 ns;
       wait until rising_edge(t_pm_read_enable);
+      
+      t_opcode <= opcodes.ldr;
+      t_addressing_mode <= opcodes.am_immediate;
+      wait for 10 ns;
+      wait until rising_edge(t_pm_read_enable);
+
+      t_enable <= '0';
       wait;
    end process;
 end;
