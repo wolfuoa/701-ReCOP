@@ -10,7 +10,7 @@ end entity;
 architecture arch of testbench_alu is
 
   signal t_zero          : std_logic;
-  signal t_alu_operation : std_logic_vector(2 downto 0);
+  signal t_alu_operation : std_logic_vector(1 downto 0);
   signal t_alu_op1_sel   : std_logic_vector(1 downto 0);
   signal t_alu_op2_sel   : std_logic_vector(1 downto 0);
   signal t_rz            : std_logic_vector(15 downto 0);
@@ -58,6 +58,7 @@ begin
     t_alu_operation <= alu_ops.alu_sub;
     wait for 20 ns;
     t_rx <= x"0001";
+    t_immediate <= x"0001";
     -- 1 and 1
     t_alu_op1_sel <= alu_op1_immediate;
     t_alu_op2_sel <= alu_op2_rx;
