@@ -1,24 +1,32 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use work.recop_types.all;
+  use ieee.std_logic_1164.all;
+  use work.recop_types.all;
 
 package mux_select_constants is
-   -- PC
-   constant pc_input_select_aluout : std_logic := '0';
-   constant pc_input_select_jmp : std_logic := '1';
+  -- PC
+  constant pc_input_select_aluout : std_logic := '0';
+  constant pc_input_select_jmp    : std_logic := '1';
 
-   -- Instruction register
+  -- Instruction register write
+  constant regfile_write_immediate : std_logic_vector(1 downto 0) := "00";
+  constant regfile_write_aluout    : std_logic_vector(1 downto 0) := "00";
+  constant regfile_write_mdr       : std_logic_vector(1 downto 0) := "00";
+  constant regfile_write_sip       : std_logic_vector(1 downto 0) := "00";
 
-   -- ALU
-   -- OP1
-   constant alu_op1_rz : std_logic_vector(1 downto 0) := "00";
-   constant alu_op1_pc : std_logic_vector(1 downto 0) := "01";
-   constant alu_op1_immediate : std_logic_vector(1 downto 0) := "10";
+  -- Regfile Rz Select
+  constant regfile_rz_normal : std_logic := '0';
+  constant regfile_rz_r7     : std_logic := '1';
 
-   -- OP2 
-   constant alu_op2_rx : std_logic_vector(1 downto 0) := "00";
-   constant alu_op2_zero : std_logic_vector(1 downto 0) := "01";
-   constant alu_op2_one : std_logic_vector(1 downto 0) := "10";
-   constant alu_op2_rz : std_logic_vector(1 downto 0) := "11";
+  -- ALU
+  -- OP1
+  constant alu_op1_rz        : std_logic_vector(1 downto 0) := "00";
+  constant alu_op1_pc        : std_logic_vector(1 downto 0) := "01";
+  constant alu_op1_immediate : std_logic_vector(1 downto 0) := "10";
 
-end mux_select_constants;
+  -- OP2 
+  constant alu_op2_rx   : std_logic_vector(1 downto 0) := "00";
+  constant alu_op2_zero : std_logic_vector(1 downto 0) := "01";
+  constant alu_op2_one  : std_logic_vector(1 downto 0) := "10";
+  constant alu_op2_rz   : std_logic_vector(1 downto 0) := "11";
+
+end package;

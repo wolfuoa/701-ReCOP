@@ -11,8 +11,8 @@ architecture arch of testbench_register_file is
   signal t_clock                 : std_logic;
   signal t_reset                 : std_logic;
   signal t_write_enable          : std_logic;
-  signal t_rz_index              : integer range 0 to 15 := 0;
-  signal t_rx_index              : integer range 0 to 15 := 0;
+  signal t_rz_index              : std_logic_vector(3 downto 0);
+  signal t_rx_index              : std_logic_vector(3 downto 0);
   signal t_rx                    : std_logic_vector(15 downto 0);
   signal t_rz                    : std_logic_vector(15 downto 0);
   signal t_rz_select             : std_logic;
@@ -70,7 +70,7 @@ begin
   process
   begin
     t_rz_select <= '0';
-    t_rz_index <= 0;
+    t_rz_index <= x"0";
     t_register_write_select <= "00";
     wait for 600 ns;
     t_rz_select <= '1';
@@ -79,7 +79,7 @@ begin
     t_rz_select <= '0';
     t_register_write_select <= "10";
     wait for 600 ns;
-    t_rz_index <= 7;
+    t_rz_index <= x"7";
     t_register_write_select <= "11";
     wait for 600 ns;
   end process;

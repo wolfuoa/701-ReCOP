@@ -10,15 +10,15 @@ entity data_memory is
         reset        : in  std_logic;
 
         -- Writing Data
-        data_in      : in  std_logic_vector (15 downto 0);
+        data_in      : in  std_logic_vector(15 downto 0);
         write_enable : in  std_logic;
 
         -- Reading Data
-        address      : in  std_logic_vector (15 downto 0);
-        data_out     : out std_logic_vector (15 downto 0)
+        address      : in  std_logic_vector(15 downto 0);
+        data_out     : out std_logic_vector(15 downto 0)
 
     );
-end data_memory;
+end entity;
 
 architecture bhv of data_memory is
 
@@ -26,21 +26,22 @@ architecture bhv of data_memory is
 
 begin
 
-    ram : entity altera_mf.altsyncram generic map (
-        clock_enable_input_a   => "BYPASS",
-        clock_enable_output_a  => "BYPASS",
-        intended_device_family => "Cyclone V",
-        lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
-        lpm_type               => "altsyncram",
-        numwords_a             => 4096,
-        operation_mode         => "SINGLE_PORT",
-        outdata_aclr_a         => "NONE",
-        outdata_reg_a          => "UNREGISTERED",
-        power_up_uninitialized => "FALSE",
-        ram_block_type         => "M4K",
-        widthad_a              => 16,
-        width_a                => 16,
-        width_byteena_a        => 1
+    ram : entity altera_mf.altsyncram
+        generic map(
+            clock_enable_input_a   => "BYPASS",
+            clock_enable_output_a  => "BYPASS",
+            intended_device_family => "Cyclone V",
+            lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
+            lpm_type               => "altsyncram",
+            numwords_a             => 4096,
+            operation_mode         => "SINGLE_PORT",
+            outdata_aclr_a         => "NONE",
+            outdata_reg_a          => "UNREGISTERED",
+            power_up_uninitialized => "FALSE",
+            ram_block_type         => "M4K",
+            widthad_a              => 16,
+            width_a                => 16,
+            width_byteena_a        => 1
         )
         port map(
             address_a => address,

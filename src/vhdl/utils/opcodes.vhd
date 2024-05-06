@@ -36,12 +36,12 @@ package opcodes is
 	constant str: bit_6 := "000010";
  
 
--- operations with immediate and direct AM
-	-- immediate: JMP #address 
+   -- operations with immediate and direct AM
+   -- immediate: JMP #address 
    -- direct: JMP Rx 
 	constant jmp: bit_6 := "011000";
 	
--- operations with direct AM
+   -- operations with direct AM
    -- direct: PRESENT Rz Rx 
 	constant present: bit_6 := "011100";
 
