@@ -79,7 +79,7 @@ begin
       alu_op_sel                        => t_alu_op_sel,
       data_memory_data_select           => t_data_memory_data_select,
       data_memory_address_select        => t_data_memory_address_select,
-      mdr_write_enable                  => t_mdr_write_enable,
+      dmr_write_enable                  => t_mdr_write_enable,
       z_register_write_enable           => t_z_register_write_enable,
       z_register_reset                  => t_z_register_reset,
       lsip                              => t_lsip,

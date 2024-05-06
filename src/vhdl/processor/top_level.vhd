@@ -39,7 +39,7 @@ architecture bhv of top_level is
   signal data_memory_data_select           : std_logic_vector(1 downto 0);
   signal data_memory_address_select        : std_logic;
   signal data_memory_write_enable          : std_logic;
-  signal mdr_write_enable                  : std_logic;
+  signal dmr_write_enable                  : std_logic;
   signal z_register_write_enable           : std_logic;
   signal lsip                              : std_logic;
   signal ssop                              : std_logic;
@@ -100,7 +100,7 @@ begin
       alu_op_sel                        => alu_op_sel,
       data_memory_data_select           => data_memory_data_select,
       data_memory_address_select        => data_memory_address_select,
-      mdr_write_enable                  => mdr_write_enable,
+      dmr_write_enable                  => dmr_write_enable,
       z_register_write_enable           => z_register_write_enable,
       sip_register_value_in             => sip,
       lsip                              => lsip,
@@ -112,36 +112,36 @@ begin
 
   control_unit_inst: entity work.control_unit
     port map (
-      clock                => clock,
-      reset                => reset,
-      addressing_mode      => addressing_mode,
-      opcode               => opcode,
-      dprr                 => '0',  -- TODO
-      aluOp2_select        => alu_op2_sel,
-      jump_select          => jump_select,
-      DPCRwrite_enable     => open, -- TODO
-      dmr_enable           => mdr_write_enable,
-      rz_write_enable      => rz_register_write_enable,
-      rx_write_enable      => rx_register_write_enable,
-      alu_reg_write_enable => alu_register_write_enable,
-      sop_write_enable     => open, -- TODO
-      zero_reg_reset       => z_register_reset,
-      dm_write_enable      => mdr_write_enable,
-      dpcr_select          => open, -- TODO
-      alu_op               => alu_op_sel,
-      dm_addr_select       => data_memory_address_select,
-      regfile_write_enable => register_file_write_enable,
-      aluOp1_select        => alu_op1_sel,
-      reg_write_select     => register_file_write_select,
-      zero_write_enable    => z_register_write_enable,
-      sip_ld               => lsip,
+      clock                             => clock,
+      reset                             => reset,
+      addressing_mode                   => addressing_mode,
+      opcode                            => opcode,
+      dprr                              => '0',  -- TODO
+      alu_op2_sel                       => alu_op2_sel,
+      jump_select                       => jump_select,
+      DPCRwrite_enable                  => open, -- TODO
+      dmr_write_enable                  => dmr_write_enable,
+      rz_register_write_enable          => rz_register_write_enable,
+      rx_register_write_enable          => rx_register_write_enable,
+      alu_register_write_enable         => alu_register_write_enable,
+      ssop                              => open, -- TODO
+      z_register_reset                  => z_register_reset,
+      data_memory_write_enable          => dmr_write_enable,
+      dpcr_select                       => open, -- TODO
+      alu_op_sel                        => alu_op_sel,
+      data_memory_address_select        => data_memory_address_select,
+      register_file_write_enable        => register_file_write_enable,
+      alu_op1_sel                       => alu_op1_sel,
+      register_file_write_select        => register_file_write_select,
+      z_register_write_enable           => z_register_write_enable,
+      lsip                              => lsip,
       -- TODO SOP_ST
-      pm_read_enable       => open, -- TODO
-      ir_write_enable      => instruction_register_write_enable,
-      pc_write_enable      => pc_write_enable,
-      pc_branch_cond       => pc_branch_conditional,
-      pc_write_select      => pc_input_select,
-      enable               => enable
+      program_memory_read_enable        => open, -- TODO
+      instruction_register_write_enable => instruction_register_write_enable,
+      pc_write_enable                   => pc_write_enable,
+      pc_branch_conditional             => pc_branch_conditional,
+      pc_input_select                   => pc_input_select,
+      enable                            => enable
     );
 
 end architecture;

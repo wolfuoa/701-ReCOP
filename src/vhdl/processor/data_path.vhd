@@ -46,7 +46,7 @@ entity data_path is
     data_memory_data_select           : in  std_logic_vector(1 downto 0);
     data_memory_address_select        : in  std_logic;
 
-    mdr_write_enable                  : in  std_logic;
+    dmr_write_enable                  : in  std_logic;
 
     z_register_write_enable           : in  std_logic;
     z_register_reset                  : in  std_logic;
@@ -214,7 +214,7 @@ begin
     port map (
       clock        => clock,
       reset        => reset,
-      write_enable => mdr_write_enable,
+      write_enable => dmr_write_enable,
       data_in      => mdr_value_in,
       data_out     => mdr_value_out
     );

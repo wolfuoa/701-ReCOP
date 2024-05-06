@@ -7,11 +7,8 @@ library ieee;
 
 entity testbench_top_level is
   port (
-    t_aluOp2_select        : out   std_logic_vector(1 downto 0);
     t_DPCRwrite_enable     : out   std_logic;
     t_dmr_enable           : out   std_logic;
-    t_rz_write_enable      : out   std_logic;
-    t_rx_write_enable      : out   std_logic;
     t_alu_reg_write_enable : out   std_logic;
     t_sop_write_enable     : out   std_logic;
     t_zero_reg_reset       : out   std_logic;
@@ -19,14 +16,10 @@ entity testbench_top_level is
     t_dpcr_select          : out   std_logic;
     t_alu_op               : out   std_logic_vector(1 downto 0);
     t_dm_addr_select       : out   std_logic;
-    t_regfile_write_enable : out   std_logic;
-    t_aluOp1_select        : out   std_logic_vector(1 downto 0);
     t_zero_write_enable    : out   std_logic;
     t_sip_ld               : out   std_logic;
     t_pm_read_enable       : inout std_logic;
     t_ir_write_enable      : out   std_logic;
-    t_pc_branch_cond       : out   std_logic;
-    t_pc_write_select      : out   std_logic;
     t_state_decode_fail    : out   std_logic
   );
 end entity;
@@ -40,30 +33,34 @@ architecture test of testbench_top_level is
   signal t_t_sip  : std_logic_vector(15 downto 0);
 
   signal t_reg_write_select                  : std_logic_vector(1 downto 0);
-  signal t_pc_input_select                   : std_logic;
   signal t_pc_write_enable                   : std_logic;
-  signal t_pc_branch_conditional             : std_logic;
   signal t_jump_select                       : std_logic;
-  signal t_register_file_write_enable        : std_logic;
   signal t_register_file_write_select        : std_logic_vector(1 downto 0);
   signal t_register_file_rz_select           : std_logic;
   signal t_instruction_register_write_enable : std_logic;
-  signal t_rz_register_write_enable          : std_logic;
-  signal t_rx_register_write_enable          : std_logic;
   signal t_alu_register_write_enable         : std_logic;
-  signal t_alu_op1_sel                       : std_logic_vector(1 downto 0);
-  signal t_alu_op2_sel                       : std_logic_vector(1 downto 0);
-  signal t_alu_op_sel                        : std_logic_vector(1 downto 0);
-  signal t_data_memory_data_select           : std_logic_vector(1 downto 0);
-  signal t_data_memory_address_select        : std_logic;
-  signal t_data_memory_write_enable          : std_logic;
-  signal t_mdr_write_enable                  : std_logic;
-  signal t_z_register_write_enable           : std_logic;
-  signal t_lsip                              : std_logic;
-  signal t_ssop                              : std_logic;
-  signal t_addressing_mode                   : std_logic_vector(1 downto 0);
-  signal t_opcode                            : std_logic_vector(5 downto 0);
-  signal t_z_register_reset                  : std_logic;
+
+  signal t_data_memory_data_select    : std_logic_vector(1 downto 0);
+  signal t_data_memory_address_select : std_logic;
+  signal t_data_memory_write_enable   : std_logic;
+  signal t_mdr_write_enable           : std_logic;
+  signal t_z_register_write_enable    : std_logic;
+  signal t_lsip                       : std_logic;
+  signal t_ssop                       : std_logic;
+  signal t_addressing_mode            : std_logic_vector(1 downto 0);
+  signal t_opcode                     : std_logic_vector(5 downto 0);
+  signal t_z_register_reset           : std_logic;
+
+  signal t_alu_op_sel  : std_logic_vector(1 downto 0);
+  signal t_alu_op1_sel : std_logic_vector(1 downto 0);
+  signal t_alu_op2_sel : std_logic_vector(1 downto 0);
+
+  signal t_rz_register_write_enable   : std_logic;
+  signal t_rx_register_write_enable   : std_logic;
+  signal t_register_file_write_enable : std_logic;
+
+  signal t_pc_branch_conditional : std_logic;
+  signal t_pc_input_select       : std_logic;
 
   signal t_program_memory_address : std_logic_vector(15 downto 0);
   signal t_program_memory_data    : std_logic_vector(31 downto 0);
@@ -140,7 +137,7 @@ begin
       alu_op_sel                        => t_alu_op_sel,
       data_memory_data_select           => t_data_memory_data_select,
       data_memory_address_select        => t_data_memory_address_select,
-      mdr_write_enable                  => t_mdr_write_enable,
+      dmr_write_enable                  => t_mdr_write_enable,
       z_register_write_enable           => t_z_register_write_enable,
       z_register_reset                  => t_z_register_reset,
       lsip                              => t_lsip,
@@ -153,37 +150,37 @@ begin
 
   control_unit_inst: entity work.control_unit
     port map (
-      clock                   => t_clock,
-      enable                  => t_enable,
-      reset                   => t_reset,
-      addressing_mode         => t_addressing_mode,
-      opcode                  => t_opcode,
-      dprr                    => t_dprr,
-      aluOp2_select           => t_aluOp2_select,
-      jump_select             => t_jump_select,
-      DPCRwrite_enable        => t_DPCRwrite_enable,
-      dmr_enable              => t_dmr_enable,
-      rz_write_enable         => t_rz_write_enable,
-      rx_write_enable         => t_rx_write_enable,
-      alu_reg_write_enable    => t_alu_reg_write_enable,
-      sop_write_enable        => t_sop_write_enable,
-      zero_reg_reset          => t_zero_reg_reset,
-      dm_write_enable         => t_dm_write_enable,
-      dpcr_select             => t_dpcr_select,
-      register_file_rz_select => t_register_file_rz_select,
-      alu_op                  => t_alu_op,
-      dm_addr_select          => t_dm_addr_select,
-      regfile_write_enable    => t_register_file_write_enable,
-      aluOp1_select           => t_aluOp1_select,
-      reg_write_select        => t_reg_write_select,
-      zero_write_enable       => t_zero_write_enable,
-      sip_ld                  => t_sip_ld,
-      pm_read_enable          => t_pm_read_enable,
-      ir_write_enable         => t_instruction_register_write_enable,
-      pc_write_enable         => t_pc_write_enable,
-      pc_branch_cond          => t_pc_branch_cond,
-      pc_write_select         => t_pc_input_select,
-      state_decode_fail       => t_state_decode_fail
+      clock                             => t_clock,
+      enable                            => t_enable,
+      reset                             => t_reset,
+      addressing_mode                   => t_addressing_mode,
+      opcode                            => t_opcode,
+      dprr                              => t_dprr,
+      alu_op2_sel                       => t_alu_op2_sel,
+      jump_select                       => t_jump_select,
+      DPCRwrite_enable                  => t_DPCRwrite_enable,
+      dmr_write_enable                  => t_dmr_enable,
+      rz_register_write_enable          => t_rz_register_write_enable,
+      rx_register_write_enable          => t_rx_register_write_enable,
+      alu_register_write_enable         => t_alu_reg_write_enable,
+      ssop                              => t_sop_write_enable,
+      z_register_reset                  => t_zero_reg_reset,
+      data_memory_write_enable          => t_dm_write_enable,
+      dpcr_select                       => t_dpcr_select,
+      register_file_rz_select           => t_register_file_rz_select,
+      alu_op_sel                        => t_alu_op,
+      data_memory_address_select        => t_dm_addr_select,
+      register_file_write_enable        => t_register_file_write_enable,
+      alu_op1_sel                       => t_alu_op1_sel,
+      register_file_write_select        => t_reg_write_select,
+      z_register_write_enable           => t_zero_write_enable,
+      lsip                              => t_sip_ld,
+      program_memory_read_enable        => t_pm_read_enable,
+      instruction_register_write_enable => t_instruction_register_write_enable,
+      pc_write_enable                   => t_pc_write_enable,
+      pc_branch_conditional             => t_pc_branch_conditional,
+      pc_input_select                   => t_pc_input_select,
+      state_decode_fail                 => t_state_decode_fail
     );
 
   -- Clock
