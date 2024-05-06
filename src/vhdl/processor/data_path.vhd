@@ -104,7 +104,12 @@ begin
                                            rx_register_value_out when '1',
                                            immediate when others;
 
-    pc_write <= (z_register_value_out(0) and pc_branch_conditional) or pc_write_enable;
+    pc_write  <= (z_register_value_out(0) and pc_branch_conditional) or pc_write_enable;
+
+    -- TODO: MOVE THIS TO INSTRUCTION REGISTER
+    immediate <= packet(15 downto 0);
+    rz_index  <= packet(23 downto 20);
+    rx_index  <= packet(19 downto 16);
 
     pc_inst : entity work.pc
         generic map(

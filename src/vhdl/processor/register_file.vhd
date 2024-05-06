@@ -39,36 +39,49 @@ architecture beh of register_file is
     signal data_input_z  : std_logic_vector(15 downto 0);
 begin
 
+    with rz_select select temp_rz_index
+        <=
+        x"7" when '1',
+        rz_index when others;
+
+    with register_write_select select data_input_z
+        <=
+        immediate when "00",
+        alu_out when "01",
+        data_memory when "10",
+        sip when "11",
+        x"0000" when others;
+
     -- mux selecting address for Rz
-    register_z_select_mux : process (rz_select, rz_index)
-    begin
-        case rz_select is
-            when '0' =>
-                temp_rz_index <= rz_index; -- From IR
-            when '1' =>
-                temp_rz_index <= x"7"; -- If we need value of R7 for DATACALL
-            when others =>
-                temp_rz_index <= rz_index;
-        end case;
-    end process;
+    -- register_z_select_mux : process (rz_select, rz_index)
+    -- begin
+    --     case rz_select is
+    --         when '0' =>
+    --             temp_rz_index <= rz_index; -- From IR
+    --         when '1' =>
+    --             temp_rz_index <= x"7"; -- If we need value of R7 for DATACALL
+    --         when others =>
+    --             temp_rz_index <= rz_index;
+    --     end case;
+    -- end process;
 
     -- mux selecting input data to be written to Rz
 
-    input_select_mux : process (register_write_select, immediate, data_memory, alu_out, sip)
-    begin
-        case register_write_select is
-            when "00" =>
-                data_input_z <= immediate;
-            when "01" =>
-                data_input_z <= alu_out;
-            when "10" =>
-                data_input_z <= data_memory;
-            when "11" =>
-                data_input_z <= sip;
-            when others =>
-                data_input_z <= X"0000";
-        end case;
-    end process;
+    -- input_select_mux : process (register_write_select, immediate, data_memory, alu_out, sip)
+    -- begin
+    --     case register_write_select is
+    --         when "00" =>
+    --             data_input_z <= immediate;
+    --         when "01" =>
+    --             data_input_z <= alu_out;
+    --         when "10" =>
+    --             data_input_z <= data_memory;
+    --         when "11" =>
+    --             data_input_z <= sip;
+    --         when others =>
+    --             data_input_z <= X"0000";
+    --     end case;
+    -- end process;
 
     process (clock, reset)
     begin
