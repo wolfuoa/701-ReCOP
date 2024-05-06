@@ -30,7 +30,7 @@ architecture test of testbench_top_level is
 
   signal t_pc_write_enable                   : std_logic;
   signal t_jump_select                       : std_logic;
-  signal t_register_file_write_select        : std_logic_vector(1 downto 0) := x"0";
+  signal t_register_file_write_select        : std_logic_vector(1 downto 0) := "00";
   signal t_register_file_rz_select           : std_logic;
   signal t_instruction_register_write_enable : std_logic;
   signal t_alu_register_write_enable         : std_logic;
