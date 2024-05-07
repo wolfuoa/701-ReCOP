@@ -52,7 +52,7 @@ architecture test of testbench_top_level is
   signal t_register_file_write_enable : std_logic;
 
   signal t_pc_branch_conditional : std_logic;
-  signal t_pc_input_select       : std_logic;
+  signal t_pc_input_select       : std_logic_vector(1 downto 0);
 
   signal t_program_memory_read_enable : std_logic;
   signal t_program_memory_address     : std_logic_vector(15 downto 0);
@@ -61,6 +61,8 @@ architecture test of testbench_top_level is
   signal t_data_memory_address  : std_logic_vector(15 downto 0);
   signal t_data_memory_data_in  : std_logic_vector(15 downto 0);
   signal t_data_memory_data_out : std_logic_vector(15 downto 0);
+
+  signal t_instruction_register_buffer_enable : std_logic;
 
   type memory_array is array (0 to 13) of std_logic_vector(31 downto 0);
   signal progam_memory_inst : memory_array := (
@@ -101,99 +103,103 @@ begin
   data_path_inst: entity work.data_path
     port map (
       -- outputs
-      addressing_mode                   => t_addressing_mode,
-      opcode                            => t_opcode,
+      addressing_mode                    => t_addressing_mode,
+      opcode                             => t_opcode,
 
       -- inputs
-      clock                             => t_clock,
-      reset                             => t_reset,
+      clock                              => t_clock,
+      reset                              => t_reset,
 
-      program_memory_address            => program_memory_address,
-      program_memory_data               => program_memory_data,
+      program_memory_address             => program_memory_address,
+      program_memory_data                => program_memory_data,
 
-      data_memory_address               => t_data_memory_address,
-      data_memory_data_out              => t_data_memory_data_out,
-      data_memory_data_in               => t_data_memory_data_in,
+      data_memory_address                => t_data_memory_address,
+      data_memory_data_out               => t_data_memory_data_out,
+      data_memory_data_in                => t_data_memory_data_in,
 
-      pc_input_select                   => t_pc_input_select,
-      pc_write_enable                   => t_pc_write_enable,
-      pc_branch_conditional             => t_pc_branch_conditional,
+      pc_input_select                    => t_pc_input_select,
+      pc_write_enable                    => t_pc_write_enable,
+      pc_branch_conditional              => t_pc_branch_conditional,
 
-      jump_select                       => t_jump_select,
+      jump_select                        => t_jump_select,
 
-      register_file_write_enable        => t_register_file_write_enable,
-      register_file_write_select        => t_register_file_write_select,
-      register_file_rz_select           => t_register_file_rz_select,
+      register_file_write_enable         => t_register_file_write_enable,
+      register_file_write_select         => t_register_file_write_select,
+      register_file_rz_select            => t_register_file_rz_select,
 
-      instruction_register_write_enable => t_instruction_register_write_enable,
+      instruction_register_write_enable  => t_instruction_register_write_enable,
 
-      rz_register_write_enable          => t_rz_register_write_enable,
-      rx_register_write_enable          => t_rx_register_write_enable,
+      instruction_register_buffer_enable => t_instruction_register_buffer_enable,
 
-      alu_register_write_enable         => t_alu_register_write_enable,
-      alu_op1_sel                       => t_alu_op1_sel,
-      alu_op2_sel                       => t_alu_op2_sel,
-      alu_op_sel                        => t_alu_op_sel,
+      rz_register_write_enable           => t_rz_register_write_enable,
+      rx_register_write_enable           => t_rx_register_write_enable,
 
-      data_memory_data_select           => t_data_memory_data_select,
-      data_memory_address_select        => t_data_memory_address_select,
+      alu_register_write_enable          => t_alu_register_write_enable,
+      alu_op1_sel                        => t_alu_op1_sel,
+      alu_op2_sel                        => t_alu_op2_sel,
+      alu_op_sel                         => t_alu_op_sel,
 
-      dmr_write_enable                  => t_mdr_write_enable,
+      data_memory_data_select            => t_data_memory_data_select,
+      data_memory_address_select         => t_data_memory_address_select,
 
-      z_register_write_enable           => t_z_register_write_enable,
-      z_register_reset                  => t_z_register_reset,
+      dmr_write_enable                   => t_mdr_write_enable,
 
-      lsip                              => t_lsip,
-      ssop                              => t_ssop,
-      sip_register_value_in             => x"0000",
-      sop_register_value_out            => open
+      z_register_write_enable            => t_z_register_write_enable,
+      z_register_reset                   => t_z_register_reset,
+
+      lsip                               => t_lsip,
+      ssop                               => t_ssop,
+      sip_register_value_in              => x"0000",
+      sop_register_value_out             => open
     );
 
   control_unit_inst: entity work.control_unit
     port map (
-      clock                             => t_clock,
-      enable                            => t_enable,
-      reset                             => t_reset,
-      addressing_mode                   => t_addressing_mode,
-      opcode                            => t_opcode,
+      clock                              => t_clock,
+      enable                             => t_enable,
+      reset                              => t_reset,
+      addressing_mode                    => t_addressing_mode,
+      opcode                             => t_opcode,
 
-      dprr                              => t_dprr,
-      jump_select                       => t_jump_select,
-      DPCRwrite_enable                  => t_DPCRwrite_enable,
+      dprr                               => t_dprr,
+      jump_select                        => t_jump_select,
+      DPCRwrite_enable                   => t_DPCRwrite_enable,
 
-      alu_register_write_enable         => t_alu_register_write_enable,
-      dpcr_select                       => t_dpcr_select,
+      alu_register_write_enable          => t_alu_register_write_enable,
+      dpcr_select                        => t_dpcr_select,
 
-      alu_op_sel                        => t_alu_op_sel,
-      alu_op1_sel                       => t_alu_op1_sel,
-      alu_op2_sel                       => t_alu_op2_sel,
+      alu_op_sel                         => t_alu_op_sel,
+      alu_op1_sel                        => t_alu_op1_sel,
+      alu_op2_sel                        => t_alu_op2_sel,
 
-      data_memory_address_select        => t_dm_addr_select,
+      data_memory_address_select         => t_dm_addr_select,
 
-      register_file_write_enable        => t_register_file_write_enable,
-      register_file_write_select        => t_register_file_write_select,
-      register_file_rz_select           => t_register_file_rz_select,
+      register_file_write_enable         => t_register_file_write_enable,
+      register_file_write_select         => t_register_file_write_select,
+      register_file_rz_select            => t_register_file_rz_select,
 
-      rz_register_write_enable          => t_rz_register_write_enable,
-      rx_register_write_enable          => t_rx_register_write_enable,
+      rz_register_write_enable           => t_rz_register_write_enable,
+      rx_register_write_enable           => t_rx_register_write_enable,
 
-      z_register_write_enable           => t_z_register_write_enable,
-      z_register_reset                  => t_zero_reg_reset,
+      z_register_write_enable            => t_z_register_write_enable,
+      z_register_reset                   => t_zero_reg_reset,
 
-      lsip                              => t_lsip,
-      ssop                              => t_ssop,
+      instruction_register_buffer_enable => t_instruction_register_buffer_enable,
 
-      data_memory_write_enable          => t_dm_write_enable,
-      dmr_write_enable                  => t_dmr_enable,
+      lsip                               => t_lsip,
+      ssop                               => t_ssop,
 
-      program_memory_read_enable        => t_program_memory_read_enable,
-      instruction_register_write_enable => t_instruction_register_write_enable,
+      data_memory_write_enable           => t_dm_write_enable,
+      dmr_write_enable                   => t_dmr_enable,
 
-      pc_write_enable                   => t_pc_write_enable,
-      pc_branch_conditional             => t_pc_branch_conditional,
-      pc_input_select                   => t_pc_input_select,
+      program_memory_read_enable         => t_program_memory_read_enable,
+      instruction_register_write_enable  => t_instruction_register_write_enable,
 
-      state_decode_fail                 => t_state_decode_fail
+      pc_write_enable                    => t_pc_write_enable,
+      pc_branch_conditional              => t_pc_branch_conditional,
+      pc_input_select                    => t_pc_input_select,
+
+      state_decode_fail                  => t_state_decode_fail
     );
 
   -- Clock

@@ -15,9 +15,10 @@ entity pc is
     reset           : in  std_logic;
     write_enable    : in  std_logic;
     -- see various_constants.vhd for options for this input
-    pc_input_select : in  std_logic;
+    pc_input_select : in  std_logic_vector(1 downto 0);
     jump_address    : in  std_logic_vector(15 downto 0);
     alu_out         : in  std_logic_vector(15 downto 0);
+    alu             : in  std_logic_vector(15 downto 0);
 
     pc              : out std_logic_vector(15 downto 0)
   );
@@ -32,6 +33,7 @@ begin
   with pc_input_select select pc_internal_next <=
     alu_out             when pc_input_select_aluout,
     jump_address        when pc_input_select_jmp,
+    alu                 when pc_input_select_alu,
         (others => 'X') when others;
 
   pc <= pc_internal;
