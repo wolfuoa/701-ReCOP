@@ -9,60 +9,62 @@ library ieee;
 
 entity control_unit is
   port (
-    clock                             : in  std_logic := '0';
-    enable                            : in  std_logic := '0';
-    reset                             : in  std_logic := '0';
+    clock                              : in  std_logic                    := '0';
+    enable                             : in  std_logic                    := '0';
+    reset                              : in  std_logic                    := '0';
 
-    addressing_mode                   : in  std_logic_vector(1 downto 0);
-    opcode                            : in  std_logic_vector(5 downto 0);
+    addressing_mode                    : in  std_logic_vector(1 downto 0);
+    opcode                             : in  std_logic_vector(5 downto 0);
 
-    dprr                              : in  std_logic := '0';
+    dprr                               : in  std_logic                    := '0';
 
-    DPCRwrite_enable                  : out std_logic := '0';
-    dpcr_select                       : out std_logic := '0';
+    DPCRwrite_enable                   : out std_logic                    := '0';
+    dpcr_select                        : out std_logic                    := '0';
 
-    program_memory_read_enable        : out std_logic := '0';
+    program_memory_read_enable         : out std_logic                    := '0';
 
-    instruction_register_write_enable : out std_logic := '0';
+    instruction_register_write_enable  : out std_logic                    := '0';
+    instruction_register_buffer_enable : out std_logic                    := '0';
 
-    data_memory_write_enable          : out std_logic := '0';
-    data_memory_address_select        : out std_logic := '0';
+    data_memory_write_enable           : out std_logic                    := '0';
+    data_memory_address_select         : out std_logic                    := '0';
 
-    dmr_write_enable                  : out std_logic := '0';
+    dmr_write_enable                   : out std_logic                    := '0';
 
-    lsip                              : out std_logic := '0';
-    ssop                              : out std_logic := '0';
+    lsip                               : out std_logic                    := '0';
+    ssop                               : out std_logic                    := '0';
 
-    register_file_write_select        : out std_logic_vector(1 downto 0);
-    register_file_write_enable        : out std_logic := '0';
-    register_file_rz_select           : out std_logic := '0';
+    register_file_write_select         : out std_logic_vector(1 downto 0);
+    register_file_write_enable         : out std_logic                    := '0';
+    register_file_rz_select            : out std_logic                    := '0';
 
-    z_register_reset                  : out std_logic := '0';
-    z_register_write_enable           : out std_logic := '0';
+    z_register_reset                   : out std_logic                    := '0';
+    z_register_write_enable            : out std_logic                    := '0';
 
-    alu_op_sel                        : out std_logic_vector(1 downto 0);
-    alu_op1_sel                       : out std_logic_vector(1 downto 0);
-    alu_op2_sel                       : out std_logic_vector(1 downto 0);
-    alu_register_write_enable         : out std_logic := '0';
+    alu_op_sel                         : out std_logic_vector(1 downto 0);
+    alu_op1_sel                        : out std_logic_vector(1 downto 0);
+    alu_op2_sel                        : out std_logic_vector(1 downto 0);
+    alu_register_write_enable          : out std_logic;
 
-    rz_register_write_enable          : out std_logic := '0';
-    rx_register_write_enable          : out std_logic := '0';
+    rz_register_write_enable           : out std_logic                    := '0';
+    rx_register_write_enable           : out std_logic                    := '0';
 
-    jump_select                       : out std_logic := '0';
+    jump_select                        : out std_logic                    := '0';
 
-    pc_write_enable                   : out std_logic := '0';
-    pc_branch_conditional             : out std_logic := '0';
-    pc_input_select                   : out std_logic := '0';
+    pc_write_enable                    : out std_logic                    := '0';
+    pc_branch_conditional              : out std_logic                    := '0';
+    pc_input_select                    : out std_logic_vector(1 downto 0) := "00";
 
-    state_decode_fail                 : out std_logic := '0'
+    state_decode_fail                  : out std_logic                    := '0'
   );
 
 end entity;
 
 architecture rtl of control_unit is
-  type state_type is (instruction_fetch, reg_access, reg_reg, reg_imm, load_imm, store_reg); -- TODO: Add all other states 
-  signal state, next_state : state_type;
-  signal decoded_ALUop     : std_logic_vector(1 downto 0);
+  type state_type is (instruction_fetch, reg_access, reg_reg, reg_imm, load_imm, store_reg, no_op); -- TODO: Add all other states 
+  signal state         : state_type := no_op;
+  signal next_state    : state_type;
+  signal decoded_ALUop : std_logic_vector(1 downto 0);
 begin
 
   -- Defaults for outputs (for copying)
@@ -84,15 +86,16 @@ begin
   -- register_file_write_select <= "00";
   -- z_register_write_enable <= '0';
   -- lsip <= '0';
+  -- instruction_register_buffer_enable <= '0';
   -- program_memory_read_enable <= '0';
   -- instruction_register_write_enable <= '0';
   -- pc_write_enable <= '0';
   -- pc_branch_conditional <= '0';
-  -- pc_input_select <= '0';
+  -- pc_input_select <= "00";
   -- register_file_rz_select <= '0';
   with opcode select
     decoded_ALUop <= alu_ops.alu_and when andr,
-                     alu_ops.alu_add when orr,
+                     alu_ops.alu_or  when orr,
                      alu_ops.alu_add when addr,
                      alu_ops.alu_sub when subr,
                      alu_ops.alu_sub when subvr,
@@ -141,10 +144,11 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '1'; -- changed
+        instruction_register_buffer_enable <= '1';
         instruction_register_write_enable <= '1'; -- changed
-        pc_write_enable <= '0';
+        pc_write_enable <= '1';
         pc_branch_conditional <= '0';
-        pc_input_select <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
 
       when reg_access =>
         jump_select <= '0';
@@ -158,6 +162,7 @@ begin
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= "00";
+        instruction_register_buffer_enable <= '0';
         data_memory_address_select <= '0';
         register_file_rz_select <= mux_select_constants.regfile_rz_normal;
         register_file_write_enable <= '0';
@@ -168,9 +173,9 @@ begin
         lsip <= '0';
         program_memory_read_enable <= '0';
         instruction_register_write_enable <= '0';
-        pc_write_enable <= '1'; -- changed
+        pc_write_enable <= '0'; -- changed
         pc_branch_conditional <= '0';
-        pc_input_select <= '0'; -- changed
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
 
       when reg_reg =>
         jump_select <= '0';
@@ -182,13 +187,14 @@ begin
         ssop <= '0';
         z_register_reset <= '0';
         data_memory_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= decoded_ALUop; -- changed
         data_memory_address_select <= '0';
         register_file_write_enable <= '0';
         alu_op1_sel <= mux_select_constants.alu_op1_rz; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
-        register_file_write_select <= "00";
+        register_file_write_select <= mux_select_constants.regfile_write_aluout;
         z_register_write_enable <= '1'; -- changed
         register_file_rz_select <= mux_select_constants.regfile_rz_normal;
         lsip <= '0';
@@ -196,7 +202,7 @@ begin
         instruction_register_write_enable <= '0';
         pc_write_enable <= '0';
         pc_branch_conditional <= '0';
-        pc_input_select <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
 
       when reg_imm =>
         jump_select <= '0';
@@ -208,6 +214,7 @@ begin
         ssop <= '0';
         z_register_reset <= '0';
         data_memory_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= decoded_ALUop; -- changed
         data_memory_address_select <= '0';
@@ -215,14 +222,14 @@ begin
         alu_op1_sel <= mux_select_constants.alu_op1_immediate; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
         register_file_rz_select <= '0';
-        register_file_write_select <= "00";
+        register_file_write_select <= mux_select_constants.regfile_write_aluout;
         z_register_write_enable <= '1'; -- changed
         lsip <= '0';
         program_memory_read_enable <= '0';
         instruction_register_write_enable <= '0';
         pc_write_enable <= '0';
         pc_branch_conditional <= '0';
-        pc_input_select <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
 
       when load_imm =>
         jump_select <= '0';
@@ -232,6 +239,7 @@ begin
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '0';
         ssop <= '0';
+        instruction_register_buffer_enable <= '0';
         z_register_reset <= '0';
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
@@ -245,10 +253,10 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '0';
-        instruction_register_write_enable <= '0';
-        pc_write_enable <= '1'; -- changed
+        instruction_register_write_enable <= '1';
+        pc_write_enable <= '0'; -- changed
         pc_branch_conditional <= '0';
-        pc_input_select <= '0'; -- changed
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
 
       when store_reg =>
         jump_select <= '0';
@@ -257,6 +265,7 @@ begin
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
         ssop <= '0';
         z_register_reset <= '0';
         data_memory_write_enable <= '0';
@@ -271,10 +280,37 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '0';
-        instruction_register_write_enable <= '0';
+        instruction_register_write_enable <= '1';
         pc_write_enable <= '0';
         pc_branch_conditional <= '0';
-        pc_input_select <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
+
+      when no_op =>
+        jump_select <= '0';
+        DPCRwrite_enable <= '0';
+        dmr_write_enable <= '0';
+        rz_register_write_enable <= '0';
+        rx_register_write_enable <= '0';
+        alu_register_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
+        ssop <= '0';
+        z_register_reset <= '0';
+        data_memory_write_enable <= '0';
+        dpcr_select <= '0';
+        alu_op_sel <= "00";
+        data_memory_address_select <= '0';
+        register_file_write_enable <= '0';
+        alu_op1_sel <= "00";
+        alu_op2_sel <= "00";
+        register_file_write_select <= "00";
+        z_register_write_enable <= '0';
+        lsip <= '0';
+        program_memory_read_enable <= '0';
+        instruction_register_write_enable <= '1';
+        pc_write_enable <= '0';
+        pc_branch_conditional <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
+        register_file_rz_select <= '0';
     end case;
 
   end process;
@@ -289,9 +325,11 @@ begin
            (opcode = subvr) then
           state_decode_fail <= '0';
           next_state <= reg_access;
+
         elsif (opcode = ldr) and (addressing_mode = am_immediate) then
           state_decode_fail <= '0';
           next_state <= load_imm;
+
         else
           state_decode_fail <= '1';
           next_state <= instruction_fetch;
@@ -301,8 +339,12 @@ begin
         state_decode_fail <= '0';
         next_state <= instruction_fetch;
 
+      when no_op =>
+        state_decode_fail <= '0';
+        next_state <= instruction_fetch;
+
       when reg_access =>
-        if addressing_mode = am_direct then
+        if addressing_mode = am_register then
           state_decode_fail <= '0';
           next_state <= reg_reg;
         elsif addressing_mode = am_immediate then
@@ -331,7 +373,7 @@ begin
   SYNC: process (clock, reset)
   begin
     if (reset = '1') then
-      state <= instruction_fetch;
+      state <= no_op;
     elsif rising_edge(clock) then
       if enable = '1' then
         state <= next_state;

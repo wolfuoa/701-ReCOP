@@ -34,7 +34,7 @@ end entity;
 
 architecture beh of register_file is
   type reg_array is array (15 downto 0) of std_logic_vector(15 downto 0);
-  signal regs          : reg_array;
+  signal regs          : reg_array := ((others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'),(others => '0'));
   signal temp_rz_index : std_logic_vector(3 downto 0);
   signal data_input_z  : std_logic_vector(15 downto 0);
 begin

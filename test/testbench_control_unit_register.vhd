@@ -6,7 +6,7 @@ library ieee;
   use work.opcodes;
   use work.mux_select_constants.all;
 
-entity testbench_control_unit is
+entity testbench_control_unit_register is
   port (
     t_alu_op2_sel                : out   std_logic_vector(1 downto 0);
     t_jump_select                : out   std_logic;
@@ -30,7 +30,7 @@ entity testbench_control_unit is
     t_ir_write_enable            : out   std_logic;
     t_pc_write_enable            : out   std_logic;
     t_pc_branch_conditional      : out   std_logic;
-    t_pc_input_select            : out   std_logic;
+    t_pc_input_select            : out   std_logic_vector(1 downto 0);
     t_state_decode_fail          : out   std_logic
   );
 end entity;
@@ -94,27 +94,27 @@ begin
   process
   begin
     t_opcode <= opcodes.andr;
-    t_addressing_mode <= opcodes.am_immediate;
+    t_addressing_mode <= opcodes.am_register;
     wait for 10 ns;
     wait until rising_edge(t_pm_read_enable);
 
     t_opcode <= opcodes.subvr;
-    t_addressing_mode <= opcodes.am_immediate;
+    t_addressing_mode <= opcodes.am_register;
     wait for 10 ns;
     wait until rising_edge(t_pm_read_enable);
 
     t_opcode <= opcodes.ldr;
-    t_addressing_mode <= opcodes.am_immediate;
+    t_addressing_mode <= opcodes.am_register;
     wait for 10 ns;
     wait until rising_edge(t_pm_read_enable);
 
     t_opcode <= opcodes.orr;
-    t_addressing_mode <= opcodes.am_immediate;
+    t_addressing_mode <= opcodes.am_register;
     wait for 10 ns;
     wait until rising_edge(t_pm_read_enable);
 
     t_opcode <= opcodes.str;
-    t_addressing_mode <= opcodes.am_immediate;
+    t_addressing_mode <= opcodes.am_register;
     wait for 10 ns;
     wait until rising_edge(t_pm_read_enable);
 

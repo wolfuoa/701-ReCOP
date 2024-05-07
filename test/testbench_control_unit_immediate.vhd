@@ -6,7 +6,7 @@ library ieee;
   use work.opcodes;
   use work.mux_select_constants.all;
 
-entity testbench_control_unit is
+entity testbench_control_unit_immediate is
   port (
     t_alu_op2_sel                : out   std_logic_vector(1 downto 0);
     t_jump_select                : out   std_logic;
@@ -30,12 +30,12 @@ entity testbench_control_unit is
     t_ir_write_enable            : out   std_logic;
     t_pc_write_enable            : out   std_logic;
     t_pc_branch_conditional      : out   std_logic;
-    t_pc_input_select            : out   std_logic;
+    t_pc_input_select            : out   std_logic_vector(1 downto 0);
     t_state_decode_fail          : out   std_logic
   );
 end entity;
 
-architecture test of testbench_control_unit_register is
+architecture test of testbench_control_unit_immediate is
   signal t_clock           : std_logic := '0';
   signal t_enable          : std_logic := '1';
   signal t_reset           : std_logic;
