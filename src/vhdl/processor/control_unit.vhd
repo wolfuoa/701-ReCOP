@@ -302,7 +302,7 @@ begin
         next_state <= instruction_fetch;
 
       when reg_access =>
-        if addressing_mode = am_direct then
+        if addressing_mode = am_register then
           state_decode_fail <= '0';
           next_state <= reg_reg;
         elsif addressing_mode = am_immediate then

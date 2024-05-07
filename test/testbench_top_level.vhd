@@ -12,7 +12,6 @@ entity testbench_top_level is
     t_zero_reg_reset    : out std_logic;
     t_dm_write_enable   : out std_logic;
     t_dpcr_select       : out std_logic;
-    t_alu_op            : out std_logic_vector(1 downto 0);
     t_dm_addr_select    : out std_logic;
     t_zero_write_enable : out std_logic;
     t_state_decode_fail : out std_logic
@@ -66,8 +65,9 @@ architecture test of testbench_top_level is
 
   type memory_array is array (0 to 31) of std_logic_vector(31 downto 0);
   signal progam_memory_inst : memory_array := (
-    opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",
-    x"00000000",
+    -- AM (2) Opcode (6) Rz (4) Rx (4) Operand (16)
+    opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff", -- Load 1 0x1fff into Reg(1)
+    opcodes.am_register & opcodes.andr & "0001" & "0000" & x"0000", -- And Reg(1) which is 0x1fff with Reg(0) which is 0
     x"00000000",
     x"00000000",
     x"00000000",
@@ -173,7 +173,7 @@ begin
       alu_register_write_enable         => t_alu_register_write_enable,
       dpcr_select                       => t_dpcr_select,
 
-      alu_op_sel                        => t_alu_op,
+      alu_op_sel                        => t_alu_op_sel,
       alu_op1_sel                       => t_alu_op1_sel,
       alu_op2_sel                       => t_alu_op2_sel,
 
