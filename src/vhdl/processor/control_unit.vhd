@@ -60,7 +60,7 @@ entity control_unit is
 end entity;
 
 architecture rtl of control_unit is
-  type state_type is (instruction_fetch, reg_access, reg_reg, reg_imm, load_imm, store_reg); -- TODO: Add all other states 
+  type state_type is (instruction_fetch, reg_access, reg_reg, reg_imm, load_imm, store_reg, no_op); -- TODO: Add all other states 
   signal state, next_state : state_type;
   signal decoded_ALUop     : std_logic_vector(1 downto 0);
 begin
@@ -92,7 +92,7 @@ begin
   -- register_file_rz_select <= '0';
   with opcode select
     decoded_ALUop <= alu_ops.alu_and when andr,
-                     alu_ops.alu_add when orr,
+                     alu_ops.alu_or  when orr,
                      alu_ops.alu_add when addr,
                      alu_ops.alu_sub when subr,
                      alu_ops.alu_sub when subvr,
@@ -188,7 +188,7 @@ begin
         register_file_write_enable <= '0';
         alu_op1_sel <= mux_select_constants.alu_op1_rz; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
-        register_file_write_select <= "00";
+        register_file_write_select <= mux_select_constants.regfile_write_aluout;
         z_register_write_enable <= '1'; -- changed
         register_file_rz_select <= mux_select_constants.regfile_rz_normal;
         lsip <= '0';
@@ -215,7 +215,7 @@ begin
         alu_op1_sel <= mux_select_constants.alu_op1_immediate; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
         register_file_rz_select <= '0';
-        register_file_write_select <= "00";
+        register_file_write_select <= mux_select_constants.regfile_write_aluout;
         z_register_write_enable <= '1'; -- changed
         lsip <= '0';
         program_memory_read_enable <= '0';
@@ -271,10 +271,36 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '0';
-        instruction_register_write_enable <= '0';
+        instruction_register_write_enable <= '1';
         pc_write_enable <= '0';
         pc_branch_conditional <= '0';
         pc_input_select <= '0';
+
+      when no_op =>
+        jump_select <= '0';
+        DPCRwrite_enable <= '0';
+        dmr_write_enable <= '0';
+        rz_register_write_enable <= '0';
+        rx_register_write_enable <= '0';
+        alu_register_write_enable <= '0';
+        ssop <= '0';
+        z_register_reset <= '0';
+        data_memory_write_enable <= '0';
+        dpcr_select <= '0';
+        alu_op_sel <= "00";
+        data_memory_address_select <= '0';
+        register_file_write_enable <= '0';
+        alu_op1_sel <= "00";
+        alu_op2_sel <= "00";
+        register_file_write_select <= "00";
+        z_register_write_enable <= '0';
+        lsip <= '0';
+        program_memory_read_enable <= '0';
+        instruction_register_write_enable <= '1';
+        pc_write_enable <= '0';
+        pc_branch_conditional <= '0';
+        pc_input_select <= '0';
+        register_file_rz_select <= '0';
     end case;
 
   end process;
@@ -289,15 +315,21 @@ begin
            (opcode = subvr) then
           state_decode_fail <= '0';
           next_state <= reg_access;
+
         elsif (opcode = ldr) and (addressing_mode = am_immediate) then
           state_decode_fail <= '0';
           next_state <= load_imm;
+
         else
           state_decode_fail <= '1';
           next_state <= instruction_fetch;
         end if;
 
       when load_imm =>
+        state_decode_fail <= '0';
+        next_state <= no_op;
+
+      when no_op =>
         state_decode_fail <= '0';
         next_state <= instruction_fetch;
 
