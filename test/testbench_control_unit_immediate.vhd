@@ -30,7 +30,7 @@ entity testbench_control_unit_immediate is
     t_ir_write_enable            : out   std_logic;
     t_pc_write_enable            : out   std_logic;
     t_pc_branch_conditional      : out   std_logic;
-    t_pc_input_select            : out   std_logic;
+    t_pc_input_select            : out   std_logic_vector(1 downto 0);
     t_state_decode_fail          : out   std_logic
   );
 end entity;
