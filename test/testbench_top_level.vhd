@@ -13,7 +13,6 @@ entity testbench_top_level is
     t_dm_write_enable   : out std_logic;
     t_dpcr_select       : out std_logic;
     t_dm_addr_select    : out std_logic;
-    t_zero_write_enable : out std_logic;
     t_state_decode_fail : out std_logic
   );
 end entity;
@@ -74,13 +73,13 @@ architecture test of testbench_top_level is
     opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
     opcodes.am_immediate & opcodes.andr & "0000" & "0001" & x"1fff",  -- 0x1fff and 0x1fff
     -- Or immediate
-    opcodes.am_immediate & opcodes.orr & "0010" & "0000" & x"FF00",   -- OR x0000 with xFF00 to Reg(2)
+    opcodes.am_immediate & opcodes.orr & "0010" & "0010" & x"FF00",   -- OR x0000 with xFF00 to Reg(2)
     -- Or regiter-register
-    opcodes.am_immediate & opcodes.orr & "0011" & "0000" & x"00FF",   -- OR Reg(3) with x00FF
+    opcodes.am_immediate & opcodes.orr & "0011" & "0011" & x"00FF",   -- OR Reg(3) with x00FF
     opcodes.am_register & opcodes.orr & "0010" & "0011" & x"EEEE",    -- OR Reg(2) with Reg(3) - Output 0xFFFF into Reg(2)
     -- Add Immediate
     opcodes.am_immediate & opcodes.ldr & "0100" & "0000" & x"0001",   -- Load 1 into Reg(4)
-    opcodes.am_immediate & opcodes.addr & "0100" & "0000" & x"4444",  -- Add x4444 to Reg(4)
+    opcodes.am_immediate & opcodes.addr & "0100" & "0100" & x"4444",  -- Add x4444 to Reg(4)
     -- Add register-register
     opcodes.am_immediate & opcodes.ldr & "0101" & "0000" & x"6969",   -- Load 1 0x6969 into Reg(5)
     opcodes.am_register & opcodes.addr & "0101" & "0101" & x"EEEE",   -- 0x6969 + 0x6969
@@ -89,6 +88,8 @@ architecture test of testbench_top_level is
     opcodes.am_immediate & opcodes.subvr & "0000" & "0110" & x"B00B", -- Should be 0
     -- SUB
     opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001" -- 7 - 1
+    -- Test Zero
+
   );
 
   signal program_memory_data    : std_logic_vector(31 downto 0);
@@ -176,7 +177,7 @@ begin
       rz_register_write_enable          => t_rz_register_write_enable,
       rx_register_write_enable          => t_rx_register_write_enable,
 
-      z_register_write_enable           => t_zero_write_enable,
+      z_register_write_enable           => t_z_register_write_enable,
       z_register_reset                  => t_zero_reg_reset,
 
       lsip                              => t_lsip,

@@ -271,7 +271,7 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '0';
-        instruction_register_write_enable <= '1';
+        instruction_register_write_enable <= '0';
         pc_write_enable <= '0';
         pc_branch_conditional <= '0';
         pc_input_select <= '0';
@@ -355,7 +355,7 @@ begin
 
       when store_reg =>
         state_decode_fail <= '0';
-        next_state <= instruction_fetch;
+        next_state <= no_op;
     end case;
 
   end process;
