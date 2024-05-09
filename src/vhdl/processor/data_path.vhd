@@ -44,7 +44,7 @@ entity data_path is
 
     -- Data Memory
     data_memory_data_select            : in  std_logic_vector(1 downto 0);
-    data_memory_address_select         : in  std_logic;
+    data_memory_address_select         : in  std_logic_vector(1 downto 0);
 
     dmr_write_enable                   : in  std_logic;
 
@@ -290,14 +290,15 @@ begin
     );
 
   with data_memory_data_select select
-    data_memory_data_in <= immediate              when "00",
-                           alu_register_value_out when "01",
-                           rx_register_value_out  when "10",
+    data_memory_data_in <= immediate              when mux_select_constants.data_memory_data_immediate,
+                           alu_register_value_out when mux_select_constants.data_memory_data_aluout,
+                           rx_register_value_out  when mux_select_constants.data_memory_data_rx,
                            x"0000"                when others;
 
   with data_memory_address_select select
-    data_memory_address <= immediate             when '0',
-                           rx_register_value_out when '1',
+    data_memory_address <= immediate             when mux_select_constants.data_memory_address_immediate,
+                           rx_register_value_out when mux_select_constants.data_memory_address_rx,
+                           rz_register_value_out when mux_select_constants.data_memory_address_rz,
                            x"0000"               when others;
 
   program_memory_address <= pc;

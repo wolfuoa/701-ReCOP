@@ -27,9 +27,10 @@ entity control_unit is
     instruction_register_buffer_enable : out std_logic                    := '0';
 
     data_memory_write_enable           : out std_logic                    := '0';
-    data_memory_address_select         : out std_logic                    := '0';
+    data_memory_address_select         : out std_logic_vector(1 downto 0) := "00";
+    data_memory_data_select            : out std_logic_vector(1 downto 0) := "00";
 
-    dmr_write_enable                   : out std_logic                    := '0';
+    data_memory_register_write_enable  : out std_logic                    := '0';
 
     lsip                               : out std_logic                    := '0';
     ssop                               : out std_logic                    := '0';
@@ -61,7 +62,10 @@ entity control_unit is
 end entity;
 
 architecture rtl of control_unit is
-  type state_type is (instruction_fetch, reg_access, reg_reg, reg_imm, load_imm, store_reg, no_op); -- TODO: Add all other states 
+  type state_type is (instruction_fetch, reg_access, reg_reg,
+                      reg_imm, load_imm, store_reg, no_op,
+                      mem_load_reg, mem_load_imm,
+                      mem_store_imm, mem_write_back); -- TODO: Add all other states 
   signal state         : state_type := no_op;
   signal next_state    : state_type;
   signal decoded_ALUop : std_logic_vector(1 downto 0);
@@ -70,7 +74,7 @@ begin
   -- Defaults for outputs (for copying)
   -- jump_select <= '0';
   -- DPCRwrite_enable <= '0';
-  -- dmr_write_enable <= '0';
+  -- data_memory_register_write_enable <= '0';
   -- rz_register_write_enable <= '0';
   -- rx_register_write_enable <= '0';
   -- alu_register_write_enable <= '0'; 
@@ -79,7 +83,7 @@ begin
   -- data_memory_write_enable <= '0';
   -- dpcr_select <= '0';
   -- alu_op_sel <= "00"; 
-  -- data_memory_address_select <= '0';
+  -- data_memory_address_select <= "00";
   -- register_file_write_enable <= '0';
   -- alu_op1_sel <= "00";
   -- alu_op2_sel <= "00";
@@ -126,7 +130,7 @@ begin
       when instruction_fetch =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '1'; -- changed
@@ -136,7 +140,7 @@ begin
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= alu_ops.alu_add; -- changed
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_write_enable <= '0';
         alu_op1_sel <= mux_select_constants.alu_op1_pc; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_one; -- changed
@@ -153,7 +157,7 @@ begin
       when reg_access =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '1'; -- changed
         rx_register_write_enable <= '1'; -- changed
         alu_register_write_enable <= '0';
@@ -163,7 +167,7 @@ begin
         dpcr_select <= '0';
         alu_op_sel <= "00";
         instruction_register_buffer_enable <= '0';
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_rz_select <= mux_select_constants.regfile_rz_normal;
         register_file_write_enable <= '0';
         alu_op1_sel <= "00";
@@ -180,7 +184,7 @@ begin
       when reg_reg =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '1'; -- changed 
@@ -190,7 +194,7 @@ begin
         instruction_register_buffer_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= decoded_ALUop; -- changed
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_write_enable <= '0';
         alu_op1_sel <= mux_select_constants.alu_op1_rz; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
@@ -207,7 +211,7 @@ begin
       when reg_imm =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '1'; -- changed 
@@ -217,7 +221,7 @@ begin
         instruction_register_buffer_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= decoded_ALUop; -- changed
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_write_enable <= '0';
         alu_op1_sel <= mux_select_constants.alu_op1_immediate; -- changed
         alu_op2_sel <= mux_select_constants.alu_op2_rx; -- changed
@@ -234,7 +238,7 @@ begin
       when load_imm =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '0';
@@ -244,7 +248,7 @@ begin
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= "00";
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_write_enable <= '1'; -- changed
         alu_op1_sel <= "00";
         alu_op2_sel <= "00";
@@ -253,7 +257,7 @@ begin
         z_register_write_enable <= '0';
         lsip <= '0';
         program_memory_read_enable <= '0';
-        instruction_register_write_enable <= '1';
+        instruction_register_write_enable <= '1'; -- changed
         pc_write_enable <= '0'; -- changed
         pc_branch_conditional <= '0';
         pc_input_select <= mux_select_constants.pc_input_select_alu;
@@ -261,7 +265,7 @@ begin
       when store_reg =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '0';
@@ -271,7 +275,7 @@ begin
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= "00";
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
         register_file_write_enable <= '1'; -- changed
         alu_op1_sel <= "00";
         alu_op2_sel <= "00";
@@ -288,7 +292,7 @@ begin
       when no_op =>
         jump_select <= '0';
         DPCRwrite_enable <= '0';
-        dmr_write_enable <= '0';
+        data_memory_register_write_enable <= '0';
         rz_register_write_enable <= '0';
         rx_register_write_enable <= '0';
         alu_register_write_enable <= '0';
@@ -298,7 +302,34 @@ begin
         data_memory_write_enable <= '0';
         dpcr_select <= '0';
         alu_op_sel <= "00";
-        data_memory_address_select <= '0';
+        data_memory_address_select <= "00";
+        register_file_write_enable <= '0';
+        alu_op1_sel <= "00";
+        alu_op2_sel <= "00";
+        register_file_write_select <= "00";
+        z_register_write_enable <= '0';
+        lsip <= '0';
+        program_memory_read_enable <= '0';
+        instruction_register_write_enable <= '1'; -- Changed
+        pc_write_enable <= '0';
+        pc_branch_conditional <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
+        register_file_rz_select <= '0';
+
+      when mem_load_reg =>
+        jump_select <= '0';
+        DPCRwrite_enable <= '0';
+        data_memory_register_write_enable <= '1';
+        rz_register_write_enable <= '0';
+        rx_register_write_enable <= '0';
+        alu_register_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
+        ssop <= '0';
+        z_register_reset <= '0';
+        data_memory_write_enable <= '0'; -- changed
+        dpcr_select <= '0';
+        alu_op_sel <= "00";
+        data_memory_address_select <= mux_select_constants.data_memory_address_rx;
         register_file_write_enable <= '0';
         alu_op1_sel <= "00";
         alu_op2_sel <= "00";
@@ -311,6 +342,61 @@ begin
         pc_branch_conditional <= '0';
         pc_input_select <= mux_select_constants.pc_input_select_alu;
         register_file_rz_select <= '0';
+
+      when mem_write_back =>
+        jump_select <= '0';
+        DPCRwrite_enable <= '0';
+        data_memory_register_write_enable <= '0';
+        rz_register_write_enable <= '0';
+        rx_register_write_enable <= '0';
+        alu_register_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
+        ssop <= '0';
+        z_register_reset <= '0';
+        data_memory_write_enable <= '0';
+        dpcr_select <= '0';
+        alu_op_sel <= "00";
+        data_memory_address_select <= mux_select_constants.data_memory_address_rx;
+        register_file_write_enable <= '1'; -- changed
+        alu_op1_sel <= "00";
+        alu_op2_sel <= "00";
+        register_file_write_select <= "10"; -- changed
+        z_register_write_enable <= '0';
+        lsip <= '0';
+        program_memory_read_enable <= '0';
+        instruction_register_write_enable <= '1'; -- changed
+        pc_write_enable <= '0';
+        pc_branch_conditional <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_alu;
+        register_file_rz_select <= '0';
+
+      when mem_store_imm =>
+        jump_select <= '0';
+        DPCRwrite_enable <= '0';
+        data_memory_register_write_enable <= '1'; -- changed
+        rz_register_write_enable <= '0';
+        rx_register_write_enable <= '0';
+        alu_register_write_enable <= '0';
+        instruction_register_buffer_enable <= '0';
+        ssop <= '0';
+        z_register_reset <= '0';
+        data_memory_write_enable <= '1'; -- changed
+        dpcr_select <= '0';
+        alu_op_sel <= "00";
+        data_memory_address_select <= mux_select_constants.data_memory_address_rz;
+        register_file_write_enable <= '0';
+        alu_op1_sel <= "00";
+        alu_op2_sel <= "00";
+        register_file_write_select <= "00";
+        z_register_write_enable <= '0';
+        lsip <= '0';
+        program_memory_read_enable <= '0';
+        instruction_register_write_enable <= '1';
+        pc_write_enable <= '1'; -- changed
+        pc_branch_conditional <= '0';
+        pc_input_select <= mux_select_constants.pc_input_select_aluout;
+        register_file_rz_select <= '0';
+      when others =>
     end case;
 
   end process;
@@ -322,7 +408,9 @@ begin
         if (opcode = andr) or
            (opcode = orr) or
            (opcode = addr) or
-           (opcode = subvr) then
+           (opcode = subvr) or
+           (opcode = str) or
+           ((opcode = ldr) and (addressing_mode = am_register)) then
           state_decode_fail <= '0';
           next_state <= reg_access;
 
@@ -344,7 +432,14 @@ begin
         next_state <= instruction_fetch;
 
       when reg_access =>
-        if addressing_mode = am_register then
+
+        if (addressing_mode = am_register) and (opcode = ldr) then
+          state_decode_fail <= '0';
+          next_state <= mem_load_reg;
+        elsif (opcode = str) and (addressing_mode = am_immediate) then
+          state_decode_fail <= '0';
+          next_state <= mem_store_imm;
+        elsif addressing_mode = am_register then
           state_decode_fail <= '0';
           next_state <= reg_reg;
         elsif addressing_mode = am_immediate then
@@ -355,17 +450,24 @@ begin
           next_state <= instruction_fetch;
         end if;
 
-      when reg_reg =>
-        state_decode_fail <= '0';
-        next_state <= store_reg;
+      when reg_reg => state_decode_fail <= '0';
+                      next_state <= store_reg;
 
-      when reg_imm =>
-        state_decode_fail <= '0';
-        next_state <= store_reg;
+      when reg_imm => state_decode_fail <= '0';
+                      next_state <= store_reg;
 
-      when store_reg =>
-        state_decode_fail <= '0';
-        next_state <= instruction_fetch;
+      when store_reg => state_decode_fail <= '0';
+                        next_state <= instruction_fetch;
+
+      when mem_store_imm => state_decode_fail <= '0';
+                            next_state <= mem_write_back;
+
+      when mem_load_reg => state_decode_fail <= '0';
+                           next_state <= mem_write_back;
+
+      when mem_write_back => state_decode_fail <= '0';
+                             next_state <= instruction_fetch;
+      when others =>
     end case;
 
   end process;

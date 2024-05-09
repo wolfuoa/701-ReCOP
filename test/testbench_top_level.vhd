@@ -8,11 +8,9 @@ library ieee;
 entity testbench_top_level is
   port (
     t_DPCRwrite_enable  : out std_logic;
-    t_dmr_enable        : out std_logic;
     t_zero_reg_reset    : out std_logic;
     t_dm_write_enable   : out std_logic;
     t_dpcr_select       : out std_logic;
-    t_dm_addr_select    : out std_logic;
     t_state_decode_fail : out std_logic
   );
 end entity;
@@ -34,14 +32,14 @@ architecture test of testbench_top_level is
   signal t_alu_register_write_enable         : std_logic;
 
   signal t_data_memory_data_select    : std_logic_vector(1 downto 0);
-  signal t_data_memory_address_select : std_logic;
+  signal t_data_memory_address_select : std_logic_vector(1 downto 0);
   signal t_data_memory_write_enable   : std_logic;
 
-  signal t_mdr_write_enable        : std_logic;
-  signal t_z_register_write_enable : std_logic;
-  signal t_addressing_mode         : std_logic_vector(1 downto 0);
-  signal t_opcode                  : std_logic_vector(5 downto 0);
-  signal t_z_register_reset        : std_logic;
+  signal t_data_memory_register_write_enable : std_logic;
+  signal t_z_register_write_enable           : std_logic;
+  signal t_addressing_mode                   : std_logic_vector(1 downto 0);
+  signal t_opcode                            : std_logic_vector(5 downto 0);
+  signal t_z_register_reset                  : std_logic;
 
   signal t_alu_op_sel  : std_logic_vector(1 downto 0);
   signal t_alu_op1_sel : std_logic_vector(1 downto 0);
@@ -64,7 +62,7 @@ architecture test of testbench_top_level is
 
   signal t_instruction_register_buffer_enable : std_logic;
 
-  type memory_array is array (0 to 13) of std_logic_vector(31 downto 0);
+  type memory_array is array (0 to 16) of std_logic_vector(31 downto 0);
   signal progam_memory_inst : memory_array := (
     -- AM (2) Opcode (6) Rz (4) Rx (4) Operand (16)
     -- And register-register
@@ -89,8 +87,13 @@ architecture test of testbench_top_level is
     opcodes.am_immediate & opcodes.ldr & "0110" & "0000" & x"B00B",   -- Load 1 0xB00B into Reg(6)
     opcodes.am_immediate & opcodes.subvr & "0000" & "0110" & x"B00B", -- Should be 0
     -- SUB
-    opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001" -- 7 - 1
-    -- Test Zero
+    opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001",  -- 7 - 1
+    -- Test Store IMM
+    opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"0001",   -- Load 1 0x0001 into Reg(3)
+    opcodes.am_immediate & opcodes.str & "0011" & "0000" & x"6969",   -- Store 0x6969 into address 0x0001
+
+    -- Test Load $Rg
+    opcodes.am_register & opcodes.ldr & "0100" & "0011" & x"EEEE" -- Load content of memory at address Reg 3 into Reg(6) - Reg(6) = 0x6969
 
   );
 
@@ -142,7 +145,7 @@ begin
       data_memory_data_select            => t_data_memory_data_select,
       data_memory_address_select         => t_data_memory_address_select,
 
-      dmr_write_enable                   => t_mdr_write_enable,
+      dmr_write_enable                   => t_data_memory_register_write_enable,
 
       z_register_write_enable            => t_z_register_write_enable,
       z_register_reset                   => t_z_register_reset,
@@ -172,7 +175,7 @@ begin
       alu_op1_sel                        => t_alu_op1_sel,
       alu_op2_sel                        => t_alu_op2_sel,
 
-      data_memory_address_select         => t_dm_addr_select,
+      data_memory_address_select         => t_data_memory_address_select,
 
       register_file_write_enable         => t_register_file_write_enable,
       register_file_write_select         => t_register_file_write_select,
@@ -190,7 +193,7 @@ begin
       ssop                               => t_ssop,
 
       data_memory_write_enable           => t_dm_write_enable,
-      dmr_write_enable                   => t_dmr_enable,
+      data_memory_register_write_enable  => t_data_memory_register_write_enable,
 
       program_memory_read_enable         => t_program_memory_read_enable,
       instruction_register_write_enable  => t_instruction_register_write_enable,
@@ -200,6 +203,16 @@ begin
       pc_input_select                    => t_pc_input_select,
 
       state_decode_fail                  => t_state_decode_fail
+    );
+
+  data_memory_inst: entity work.data_memory
+    port map (
+      clock        => t_clock,
+      reset        => t_reset,
+      data_in      => t_data_memory_data_in,
+      write_enable => t_data_memory_write_enable,
+      address      => t_data_memory_address,
+      data_out     => t_data_memory_data_out
     );
 
   -- Clock
