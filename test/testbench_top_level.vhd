@@ -145,7 +145,7 @@ begin
       data_memory_data_select            => t_data_memory_data_select,
       data_memory_address_select         => t_data_memory_address_select,
 
-      dmr_write_enable                   => t_data_memory_register_write_enable,
+      data_memory_register_write_enable  => t_data_memory_register_write_enable,
 
       z_register_write_enable            => t_z_register_write_enable,
       z_register_reset                   => t_z_register_reset,

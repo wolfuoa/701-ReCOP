@@ -46,7 +46,7 @@ entity data_path is
     data_memory_data_select            : in  std_logic_vector(1 downto 0);
     data_memory_address_select         : in  std_logic_vector(1 downto 0);
 
-    dmr_write_enable                   : in  std_logic;
+    data_memory_register_write_enable  : in  std_logic;
 
     z_register_write_enable            : in  std_logic;
     z_register_reset                   : in  std_logic;
@@ -95,8 +95,8 @@ architecture bhv of data_path is
   signal sip_register_value_out : std_logic_vector(15 downto 0);
   signal sop_register_value_in  : std_logic_vector(15 downto 0);
 
-  signal mdr_value_in  : std_logic_vector(15 downto 0);
-  signal mdr_value_out : std_logic_vector(15 downto 0);
+  signal data_memory_register_data_in  : std_logic_vector(15 downto 0);
+  signal data_memory_register_data_out : std_logic_vector(15 downto 0);
 
   signal z_register_value_in  : std_logic_vector(0 downto 0);
   signal z_register_value_out : std_logic_vector(0 downto 0);
@@ -174,7 +174,7 @@ begin
       rz_select             => register_file_rz_select,
       register_write_select => register_file_write_select,
       immediate             => immediate_buffer_register_value_out,
-      data_memory           => mdr_value_out,
+      data_memory           => data_memory_register_data_out,
       alu_out               => alu_register_value_out,
       sip                   => sip_register_value_out,
       rx                    => rx_register_value_in,
@@ -238,17 +238,17 @@ begin
       data_out     => alu_register_value_out
     );
 
-  -- MDR
-  mdr: entity work.register_buffer
+  -- Data Memory Register
+  data_memory_register: entity work.register_buffer
     generic map (
       width => 16
     )
     port map (
       clock        => clock,
       reset        => reset,
-      write_enable => dmr_write_enable,
-      data_in      => mdr_value_in,
-      data_out     => mdr_value_out
+      write_enable => data_memory_register_write_enable,
+      data_in      => data_memory_register_data_in,
+      data_out     => data_memory_register_data_out
     );
 
   -- Zero register
@@ -301,8 +301,8 @@ begin
                            rz_register_value_out when mux_select_constants.data_memory_address_rz,
                            x"0000"               when others;
 
-  program_memory_address <= pc;
-  instruction            <= program_memory_data;
-  mdr_value_in           <= data_memory_data_out;
+  program_memory_address       <= pc;
+  instruction                  <= program_memory_data;
+  data_memory_register_data_in <= data_memory_data_out;
 
 end architecture;
