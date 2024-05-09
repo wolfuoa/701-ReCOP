@@ -9,7 +9,6 @@ entity testbench_top_level is
   port (
     t_DPCRwrite_enable  : out std_logic;
     t_zero_reg_reset    : out std_logic;
-    t_dm_write_enable   : out std_logic;
     t_dpcr_select       : out std_logic;
     t_state_decode_fail : out std_logic
   );
@@ -62,13 +61,13 @@ architecture test of testbench_top_level is
 
   signal t_instruction_register_buffer_enable : std_logic;
 
-  type memory_array is array (0 to 16) of std_logic_vector(31 downto 0);
+  signal not_t_clock : std_logic;
+
+  type memory_array is array (0 to 17) of std_logic_vector(31 downto 0);
   signal progam_memory_inst : memory_array := (
-    -- AM (2) Opcode (6) Rz (4) Rx (4) Operand (16)
-    -- And register-register
+    -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
     opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
     opcodes.am_register & opcodes.andr & "0001" & "0000" & x"EEEE",   -- And Reg(1) which is 0x1fff with Reg(0) which is 0
-
     -- And immediate
     opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
     opcodes.am_immediate & opcodes.andr & "0000" & "0001" & x"1fff",  -- 0x1fff and 0x1fff
@@ -86,15 +85,15 @@ architecture test of testbench_top_level is
     -- SUBV immediate
     opcodes.am_immediate & opcodes.ldr & "0110" & "0000" & x"B00B",   -- Load 1 0xB00B into Reg(6)
     opcodes.am_immediate & opcodes.subvr & "0000" & "0110" & x"B00B", -- Should be 0
-    -- SUB
+    -- -- SUB
     opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001",  -- 7 - 1
     -- Test Store IMM
     opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"0001",   -- Load 1 0x0001 into Reg(3)
     opcodes.am_immediate & opcodes.str & "0011" & "0000" & x"6969",   -- Store 0x6969 into address 0x0001
 
     -- Test Load $Rg
-    opcodes.am_register & opcodes.ldr & "0100" & "0011" & x"EEEE" -- Load content of memory at address Reg 3 into Reg(6) - Reg(6) = 0x6969
-
+    opcodes.am_register & opcodes.ldr & "0100" & "0011" & x"EEEE",    -- Load content of memory at address Reg 3 into Reg(4) -> Reg(4) = 0x6969
+    opcodes.am_immediate & opcodes.ldr & "0101" & "0000" & x"00E1"
   );
 
   signal program_memory_data    : std_logic_vector(31 downto 0);
@@ -102,6 +101,7 @@ architecture test of testbench_top_level is
 
 begin
   program_memory_data <= progam_memory_inst(to_integer(unsigned(program_memory_address)));
+  not_t_clock         <= not t_clock;
 
   data_path_inst: entity work.data_path
     port map (
@@ -176,6 +176,7 @@ begin
       alu_op2_sel                        => t_alu_op2_sel,
 
       data_memory_address_select         => t_data_memory_address_select,
+      data_memory_data_select            => t_data_memory_data_select,
 
       register_file_write_enable         => t_register_file_write_enable,
       register_file_write_select         => t_register_file_write_select,
@@ -192,7 +193,7 @@ begin
       lsip                               => t_lsip,
       ssop                               => t_ssop,
 
-      data_memory_write_enable           => t_dm_write_enable,
+      data_memory_write_enable           => t_data_memory_write_enable,
       data_memory_register_write_enable  => t_data_memory_register_write_enable,
 
       program_memory_read_enable         => t_program_memory_read_enable,
@@ -207,7 +208,7 @@ begin
 
   data_memory_inst: entity work.data_memory
     port map (
-      clock        => t_clock,
+      clock        => not_t_clock,
       reset        => t_reset,
       data_in      => t_data_memory_data_in,
       write_enable => t_data_memory_write_enable,
