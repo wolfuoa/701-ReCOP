@@ -127,21 +127,19 @@ architecture test of testbench_top_level is
         -- Test Present VALID
         opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"0000", -- Load x0000 into $r3
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"EEEE", -- Load ERROR into $r0 to ensure correct reg is checked for 0 by ALU
-        opcodes.am_immediate & opcodes.present & "0011" & "0000" & x"002A",
-
+        opcodes.am_immediate & opcodes.present & "0011" & "0000" & x"0029",
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"ABCD",     -- Dummy instruction that should be skipped
-
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"DCBA",     -- Instruction to resume (42)
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"DCBA",     -- Instruction to resume (41)
 
         -- Test Present FALSE
         opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"0024",     -- Store 0x25 (37) into $r6
-        opcodes.am_immediate & opcodes.present & "0111" & "0000" & x"002E", -- Jump to 46 if rz is 0 (never true)
+        opcodes.am_immediate & opcodes.present & "0111" & "0000" & x"002D", -- Jump to 45 if rz is 0 (never true)
         opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"D1CC",     -- Should run
-        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"D1CC"      -- Should run
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"D1CC",     -- Should run
 
-        ------------------------------------------------------------------------------------------------------------------------------------------
+        --------------------------------------------END OF FILE--------------------------------------------
 
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F",     -- Buffer instruction to ensure the last instruction is completed (PC increment)
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"      -- Buffer instruction to ensure the last instruction is completed (PC increment)
     );
 
     signal program_memory_data    : std_logic_vector(31 downto 0);

@@ -578,7 +578,7 @@ begin
                 DPCRwrite_enable                   <= '0';
                 data_memory_register_write_enable  <= '0';
                 rz_register_write_enable           <= '0';
-                rx_register_write_enable           <= '1';
+                rx_register_write_enable           <= '0';
                 alu_register_write_enable          <= '0';
                 ssop                               <= '0';
                 z_register_reset                   <= '0';
@@ -593,7 +593,7 @@ begin
                 alu_op2_sel                        <= mux_select_constants.alu_op2_zero;
                 register_file_rz_select            <= '0';
                 register_file_write_select         <= "00";
-                z_register_write_enable            <= '0';
+                z_register_write_enable            <= '1'; -- changed
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
                 instruction_register_write_enable  <= '0';
@@ -602,11 +602,11 @@ begin
                 pc_input_select                    <= mux_select_constants.pc_input_select_jmp;
 
             when branch_conditional =>
-                jump_select                        <= mux_select_constants.jump_rx;
+                jump_select                        <= mux_select_constants.jump_immediate;
                 DPCRwrite_enable                   <= '0';
                 data_memory_register_write_enable  <= '0';
                 rz_register_write_enable           <= '0';
-                rx_register_write_enable           <= '1';
+                rx_register_write_enable           <= '0';
                 alu_register_write_enable          <= '0';
                 ssop                               <= '0';
                 z_register_reset                   <= '0';
@@ -680,6 +680,9 @@ begin
                 if (addressing_mode = am_register) and (opcode = ldr) then
                     state_decode_fail <= '0';
                     next_state        <= mem_load_reg;
+                elsif (opcode = present) then
+                    state_decode_fail <= '0';
+                    next_state        <= present_state;
                 elsif (opcode = subr) then
                     state_decode_fail <= '0';
                     next_state        <= sub_no_store;
@@ -701,9 +704,6 @@ begin
                 elsif addressing_mode = am_immediate then
                     state_decode_fail <= '0';
                     next_state        <= reg_imm;
-                elsif (opcode = present) then
-                    state_decode_fail <= '0';
-                    next_state        <= present_state;
                 else
                     state_decode_fail <= '1';
                     next_state        <= instruction_fetch;
