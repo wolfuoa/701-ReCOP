@@ -114,12 +114,12 @@ architecture test of testbench_top_level is
         opcodes.am_direct & opcodes.ldr & "1101" & "0000" & x"0005",    -- $13 <= DM[x0005] (i.e $13 <= 0xC0CC)
 
         -- Test Jump immediate instruction
-        opcodes.am_immediate & opcodes.jmp & "0000" & "0000" & x"0021", -- Skip past instruction 32 to 33
+        opcodes.am_immediate & opcodes.jmp & "0000" & "0000" & x"0020", -- Skip past instruction 32 to 33
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"EEEE", -- Dummy instruction that should be skipped
         opcodes.am_immediate & opcodes.ldr & "1010" & "0000" & x"CAFE", -- Store 0x24 (36) into $r0
 
         -- Test Jump Register
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0025", -- Store 0x25 (37) into $r0
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0024", -- Store 0x25 (37) into $r0
         opcodes.am_register & opcodes.jmp & "0000" & "0000" & x"EEEE",  -- Jump to 37 (which is stored in $r0)
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F", -- Dummy instruction that should be skipped
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"B00B", -- (36) Should jump to this

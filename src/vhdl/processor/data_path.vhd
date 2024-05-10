@@ -116,7 +116,7 @@ begin
 
     instruction_register_inst : entity work.instruction_register
         port map(
-            clock           => clock,
+            clock           => not_clock,
             reset           => reset,
             write_enable    => instruction_register_write_enable,
             instruction     => instruction,

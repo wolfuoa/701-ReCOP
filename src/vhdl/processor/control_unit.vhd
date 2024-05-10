@@ -154,7 +154,7 @@ begin
                 program_memory_read_enable         <= '1'; -- changed
                 instruction_register_buffer_enable <= '1';
                 instruction_register_write_enable  <= '1'; -- changed
-                pc_write_enable                    <= '1';
+                pc_write_enable                    <= '0';
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_alu;
 
@@ -175,14 +175,14 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= "00";
-                alu_op2_sel                        <= "00";
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "00";
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
-                instruction_register_write_enable  <= '0';
-                pc_write_enable                    <= '0'; -- changed
+                instruction_register_write_enable  <= '1';
+                pc_write_enable                    <= '1'; -- changed
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_alu;
 
@@ -257,16 +257,16 @@ begin
                 dpcr_select                        <= '0';
                 alu_op_sel                         <= "00";
                 data_memory_address_select         <= "00";
-                register_file_write_enable         <= '1'; -- changed
-                alu_op1_sel                        <= "00";
-                alu_op2_sel                        <= "00";
+                register_file_write_enable         <= '1';                                          -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;              -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one;             -- changed
                 register_file_write_select         <= mux_select_constants.regfile_write_immediate; -- changed
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
                 instruction_register_write_enable  <= '1'; -- changed
-                pc_write_enable                    <= '0'; -- changed
+                pc_write_enable                    <= '1'; -- changed
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_alu;
 
@@ -452,14 +452,14 @@ begin
                 data_memory_data_select            <= mux_select_constants.data_memory_data_rx;
                 data_memory_address_select         <= mux_select_constants.data_memory_address_immediate;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= "00";
-                alu_op2_sel                        <= "00";
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "00";
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
                 instruction_register_write_enable  <= '1'; -- changed
-                pc_write_enable                    <= '0';
+                pc_write_enable                    <= '1'; -- changed 
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_aluout;
                 register_file_rz_select            <= '0';
@@ -480,14 +480,14 @@ begin
                 alu_op_sel                         <= "00";
                 data_memory_address_select         <= mux_select_constants.data_memory_address_immediate;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= "00";
-                alu_op2_sel                        <= "00";
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "00";
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
                 instruction_register_write_enable  <= '0';
-                pc_write_enable                    <= '0';
+                pc_write_enable                    <= '1';
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_alu;
                 register_file_rz_select            <= '0';
@@ -551,7 +551,7 @@ begin
                 DPCRwrite_enable                   <= '0';
                 data_memory_register_write_enable  <= '0';
                 rz_register_write_enable           <= '0';
-                rx_register_write_enable           <= '0';
+                rx_register_write_enable           <= '1';
                 alu_register_write_enable          <= '0';
                 ssop                               <= '0';
                 z_register_reset                   <= '0';
@@ -588,6 +588,7 @@ begin
                     (opcode = subvr) or
                     (opcode = subr) or
                     (opcode = str) or
+                    ((opcode = jmp) and (addressing_mode = am_register)) or
                     ((opcode = ldr) and (addressing_mode = am_register))
                     then
                     state_decode_fail <= '0';
@@ -604,10 +605,6 @@ begin
                 elsif (opcode = jmp) and (addressing_mode = am_immediate) then
                     state_decode_fail <= '0';
                     next_state        <= jump_imm;
-
-                elsif (opcode = jmp) and (addressing_mode = am_register) then
-                    state_decode_fail <= '0';
-                    next_state        <= jump_reg;
 
                 else
                     state_decode_fail <= '1';
@@ -639,6 +636,9 @@ begin
                 elsif (opcode = str) and (addressing_mode = am_direct) then
                     state_decode_fail <= '0';
                     next_state        <= mem_store_reg_at_imm;
+                elsif (opcode = jmp) then
+                    state_decode_fail <= '0';
+                    next_state        <= jump_reg;
                 elsif addressing_mode = am_register then
                     state_decode_fail <= '0';
                     next_state        <= reg_reg;
