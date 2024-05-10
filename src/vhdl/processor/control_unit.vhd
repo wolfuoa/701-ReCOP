@@ -67,7 +67,7 @@ architecture rtl of control_unit is
         mem_load_reg, mem_load_direct,
         mem_store_imm_at_reg, mem_store_reg_at_reg,
         mem_store_reg_at_imm, sub_no_store,
-        mem_write_back, jump_imm, jump_reg); -- TODO: Add all other states 
+        mem_write_back, jump_imm, jump_reg, present_state, branch_conditional); -- TODO: Add all other states 
     signal state         : state_type := no_op;
     signal next_state    : state_type;
     signal decoded_ALUop : std_logic_vector(1 downto 0);
@@ -573,6 +573,62 @@ begin
                 pc_write_enable                    <= '1';
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_jmp;
+            when present_state =>
+                jump_select                        <= '0';
+                DPCRwrite_enable                   <= '0';
+                data_memory_register_write_enable  <= '0';
+                rz_register_write_enable           <= '0';
+                rx_register_write_enable           <= '1';
+                alu_register_write_enable          <= '0';
+                ssop                               <= '0';
+                z_register_reset                   <= '0';
+                data_memory_write_enable           <= '0';
+                instruction_register_buffer_enable <= '0';
+                dpcr_select                        <= '0';
+                alu_op_sel                         <= alu_ops.alu_add; -- changed
+                data_memory_data_select            <= "00";
+                data_memory_address_select         <= "00";
+                register_file_write_enable         <= '0';
+                alu_op1_sel                        <= mux_select_constants.alu_op1_rz;
+                alu_op2_sel                        <= mux_select_constants.alu_op2_zero;
+                register_file_rz_select            <= '0';
+                register_file_write_select         <= "00";
+                z_register_write_enable            <= '0';
+                lsip                               <= '0';
+                program_memory_read_enable         <= '0';
+                instruction_register_write_enable  <= '0';
+                pc_write_enable                    <= '0';
+                pc_branch_conditional              <= '0';
+                pc_input_select                    <= mux_select_constants.pc_input_select_jmp;
+
+            when branch_conditional =>
+                jump_select                        <= mux_select_constants.jump_rx;
+                DPCRwrite_enable                   <= '0';
+                data_memory_register_write_enable  <= '0';
+                rz_register_write_enable           <= '0';
+                rx_register_write_enable           <= '1';
+                alu_register_write_enable          <= '0';
+                ssop                               <= '0';
+                z_register_reset                   <= '0';
+                data_memory_write_enable           <= '0';
+                instruction_register_buffer_enable <= '0';
+                dpcr_select                        <= '0';
+                alu_op_sel                         <= decoded_ALUop; -- changed
+                data_memory_data_select            <= "00";
+                data_memory_address_select         <= "00";
+                register_file_write_enable         <= '0';
+                alu_op1_sel                        <= "00";
+                alu_op2_sel                        <= "00";
+                register_file_rz_select            <= '0';
+                register_file_write_select         <= mux_select_constants.regfile_write_aluout;
+                z_register_write_enable            <= '0';
+                lsip                               <= '0';
+                program_memory_read_enable         <= '0';
+                instruction_register_write_enable  <= '1'; -- changed
+                pc_write_enable                    <= '0';
+                pc_branch_conditional              <= '1';
+                pc_input_select                    <= mux_select_constants.pc_input_select_jmp;
+
             when others =>
         end case;
 
@@ -588,9 +644,9 @@ begin
                     (opcode = subvr) or
                     (opcode = subr) or
                     (opcode = str) or
+                    (opcode = present) or
                     ((opcode = jmp) and (addressing_mode = am_register)) or
-                    ((opcode = ldr) and (addressing_mode = am_register))
-                    then
+                    ((opcode = ldr) and (addressing_mode = am_register)) then
                     state_decode_fail <= '0';
                     next_state        <= reg_access;
 
@@ -645,6 +701,9 @@ begin
                 elsif addressing_mode = am_immediate then
                     state_decode_fail <= '0';
                     next_state        <= reg_imm;
+                elsif (opcode = present) then
+                    state_decode_fail <= '0';
+                    next_state        <= present_state;
                 else
                     state_decode_fail <= '1';
                     next_state        <= instruction_fetch;
@@ -684,6 +743,12 @@ begin
                 next_state                                     <= instruction_fetch;
 
             when jump_reg => state_decode_fail             <= '0';
+                next_state                                     <= instruction_fetch;
+
+            when present_state => state_decode_fail        <= '0';
+                next_state                                     <= branch_conditional;
+
+            when branch_conditional => state_decode_fail   <= '0';
                 next_state                                     <= instruction_fetch;
 
             when others =>
