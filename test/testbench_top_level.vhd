@@ -63,7 +63,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 30) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 37) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -100,6 +100,7 @@ architecture test of testbench_top_level is
 
         opcodes.am_register & opcodes.str & "1001" & "1000" & x"EEEE",  -- Store contents of Rx into address Rz - DM[x0003] = 0xBEEF
         opcodes.am_register & opcodes.ldr & "1010" & "1001" & x"EEEE",  -- Rz(1010) <= DM[x0003] 
+
         -- Test store Reg at Immediate
         opcodes.am_immediate & opcodes.ldr & "1000" & "0000" & x"D1CC", -- Load 0xD1CC into register (8) Rx - D1CC
         opcodes.am_direct & opcodes.str & "0000" & "1000" & x"0004",    -- DM[x0004] <= Rx
@@ -110,8 +111,18 @@ architecture test of testbench_top_level is
         -- Test load direct (Rz <= DM[Imm])
         opcodes.am_immediate & opcodes.ldr & "1100" & "0000" & x"C0CC", -- Load 0xD1CC into register (12) Rx - C0CC
         opcodes.am_direct & opcodes.str & "0000" & "1100" & x"0005",    -- DM[x0005] <= Rx
-
         opcodes.am_direct & opcodes.ldr & "1101" & "0000" & x"0005",    -- $13 <= DM[x0005] (i.e $13 <= 0xC0CC)
+
+        -- Test Jump immediate instruction
+        opcodes.am_immediate & opcodes.jmp & "0000" & "0000" & x"0021", -- Skip past instruction 32 to 33
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"EEEE", -- Dummy instruction that should be skipped
+        opcodes.am_immediate & opcodes.ldr & "1010" & "0000" & x"CAFE", -- Store 0x24 (36) into $r0
+
+        -- Test Jump Register
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0025", -- Store 0x25 (37) into $r0
+        opcodes.am_register & opcodes.jmp & "0000" & "0000" & x"EEEE",  -- Jump to 37 (which is stored in $r0)
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F", -- Dummy instruction that should be skipped
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"B00B", -- (36) Should jump to this
 
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"  -- Buffer instruction to ensure the last instruction is completed (PC increment)
     );

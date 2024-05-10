@@ -40,4 +40,8 @@ package mux_select_constants is
     constant alu_op2_one                        : std_logic_vector(1 downto 0) := "10";
     constant alu_op2_rz                         : std_logic_vector(1 downto 0) := "11";
 
+    -- Jump 
+    constant jump_immediate                     : std_logic                    := '0';
+    constant jump_rx                            : std_logic                    := '1';
+
 end package;
