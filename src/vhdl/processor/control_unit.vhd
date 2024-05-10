@@ -583,7 +583,7 @@ begin
                 ssop                               <= '0';
                 z_register_reset                   <= '0';
                 data_memory_write_enable           <= '0';
-                instruction_register_buffer_enable <= '0';
+                instruction_register_buffer_enable <= '1';
                 dpcr_select                        <= '0';
                 alu_op_sel                         <= alu_ops.alu_add; -- changed
                 data_memory_data_select            <= "00";
@@ -624,7 +624,7 @@ begin
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
-                instruction_register_write_enable  <= '1'; -- changed
+                instruction_register_write_enable  <= '0'; -- changed
                 pc_write_enable                    <= '0';
                 pc_branch_conditional              <= '1';
                 pc_input_select                    <= mux_select_constants.pc_input_select_jmp;
