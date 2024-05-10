@@ -63,7 +63,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 22) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 30) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -85,20 +85,33 @@ architecture test of testbench_top_level is
         -- SUBV immediate
         opcodes.am_immediate & opcodes.ldr & "0110" & "0000" & x"B00B",   -- Load 1 0xB00B into Reg(6)
         opcodes.am_immediate & opcodes.subvr & "0000" & "0110" & x"B00B", -- Should be 0
-        -- -- SUB
-        opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001",  -- 7 - 1
+        -- SUB
+        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"0001",   -- $r7 <= x0001 
+        opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001",  -- 1 - 1 should assert Z register as 1, $r7 stays at 1
         -- Test Store IMM
         opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"0001",   -- Load 1 0x0001 into Reg(3)
         opcodes.am_immediate & opcodes.str & "0011" & "0000" & x"6969",   -- Store 0x6969 into address 0x0001
         -- Test Load $Rg
         opcodes.am_register & opcodes.ldr & "0100" & "0011" & x"EEEE",    -- Load content of memory at address Reg 3 into Reg(4) -> Reg(4) = 0x6969
         opcodes.am_immediate & opcodes.ldr & "0101" & "0000" & x"00E1",
-
+        -- Test Store Reg at Reg
         opcodes.am_immediate & opcodes.ldr & "1000" & "0000" & x"BEEF", -- Load 0xBEEF into register (8) Rx - BEEF
         opcodes.am_immediate & opcodes.ldr & "1001" & "0000" & x"0003", -- Load 0x0003 into register (9) Rz - 3
 
         opcodes.am_register & opcodes.str & "1001" & "1000" & x"EEEE",  -- Store contents of Rx into address Rz - DM[x0003] = 0xBEEF
         opcodes.am_register & opcodes.ldr & "1010" & "1001" & x"EEEE",  -- Rz(1010) <= DM[x0003] 
+        -- Test store Reg at Immediate
+        opcodes.am_immediate & opcodes.ldr & "1000" & "0000" & x"D1CC", -- Load 0xD1CC into register (8) Rx - D1CC
+        opcodes.am_direct & opcodes.str & "0000" & "1000" & x"0004",    -- DM[x0004] <= Rx
+
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0004", -- Store 4 into $r0
+        opcodes.am_register & opcodes.ldr & "1010" & "0000" & x"EEEE",  -- Rz(1010) <= DM[x0004] 
+
+        -- Test load direct (Rz <= DM[Imm])
+        opcodes.am_immediate & opcodes.ldr & "1100" & "0000" & x"C0CC", -- Load 0xD1CC into register (12) Rx - C0CC
+        opcodes.am_direct & opcodes.str & "0000" & "1100" & x"0005",    -- DM[x0005] <= Rx
+
+        opcodes.am_direct & opcodes.ldr & "1101" & "0000" & x"0005",    -- $13 <= DM[x0005] (i.e $13 <= 0xC0CC)
 
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"  -- Buffer instruction to ensure the last instruction is completed (PC increment)
     );
