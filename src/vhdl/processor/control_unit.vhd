@@ -784,8 +784,9 @@ begin
                     (opcode = subr) or
                     (opcode = str) or
                     (opcode = present) or
-                    ((opcode = jmp) and (addressing_mode = am_register)) or
                     (opcode = datacall_imm_opcode) or
+                    (opcode = noop) or
+                    ((opcode = jmp) and (addressing_mode = am_register)) or
                     ((opcode = ldr) and (addressing_mode = am_register)) then
                     state_decode_fail <= '0';
                     next_state        <= reg_access;
@@ -849,6 +850,9 @@ begin
                 elsif (opcode = jmp) then
                     state_decode_fail <= '0';
                     next_state        <= jump_reg;
+                elsif (opcode = noop) then
+                    state_decode_fail <= '0';
+                    next_state        <= instruction_fetch;
                 elsif addressing_mode = am_register then
                     state_decode_fail <= '0';
                     next_state        <= reg_reg;

@@ -67,7 +67,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 53) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 54) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -151,6 +151,9 @@ architecture test of testbench_top_level is
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"89AB",                 -- Load 0x1234 into $r1
         opcodes.am_immediate & opcodes.datacall_imm_opcode & "0000" & "0001" & x"CDEF", -- Should put x89ABCDEF into DPRR and wait
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0421",                 -- Execute this instruction when unblocked
+
+        -- Test No-Op
+        opcodes.am_immediate & opcodes.noop & "0000" & "0000" & x"EEEE",                -- No operation done
 
         --------------------------------------------END OF FILE--------------------------------------------
 
