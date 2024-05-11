@@ -48,6 +48,16 @@ entity data_path is
 
         data_memory_register_write_enable  : in  std_logic;
 
+        -- DPCR
+        dpcr_enable                        : in  std_logic;
+        dpcr_data_select                   : in  std_logic;
+        dpcr_data_out                      : out std_logic_vector(31 downto 0);
+
+        -- DPRR
+        dprr_data_in                       : in  std_logic_vector(31 downto 0);
+
+        dprr_clear                         : in  std_logic;
+
         z_register_write_enable            : in  std_logic;
         z_register_reset                   : in  std_logic;
 
@@ -100,6 +110,12 @@ architecture bhv of data_path is
 
     signal z_register_value_in                  : std_logic_vector(0 downto 0);
     signal z_register_value_out                 : std_logic_vector(0 downto 0);
+
+    signal dprr_data_out                        : std_logic_vector(31 downto 0);
+
+    signal dpcr_data_in                         : std_logic_vector(31 downto 0);
+
+    signal dprr_register_data_in                : std_logic_vector(31 downto 0);
 
     signal not_clock                            : std_logic;
 
@@ -292,6 +308,36 @@ begin
             data_in      => sop_register_value_in,
             data_out     => sop_register_value_out
         );
+    dprr : entity work.register_buffer
+        generic map(
+            width => 32
+        )
+        port map(
+            clock        => clock,
+            reset        => reset,
+            write_enable => '1',
+            data_in      => dprr_register_data_in,
+            data_out     => dprr_data_out
+        );
+
+    dpcr : entity work.register_buffer
+        generic map(
+            width => 32
+        )
+        port map(
+            clock        => clock,
+            reset        => reset,
+            write_enable => dpcr_enable,
+            data_in      => dpcr_data_in,
+            data_out     => dpcr_data_out
+        );
+
+    with dpcr_data_select select dpcr_data_in
+        <= rx_register_value_out & rz_register_value_out when '0',
+        rx_register_value_out & immediate_buffer_register_value_out when others;
+
+    dprr_register_data_in <= dprr_data_in when (dprr_clear = '0') else
+                             (dprr_data_in and x"FFFD");
 
     with data_memory_data_select select
         data_memory_data_in <= immediate when mux_select_constants.data_memory_data_immediate,

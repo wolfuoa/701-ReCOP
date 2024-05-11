@@ -83,8 +83,8 @@ package opcodes is
     -- operations with register and immediate AM
     -- register: DATACALL Rx
     -- immediate : DATACALL Rx #value
-    constant datacall     : bit_6 := "101000";
-    constant datacall2    : bit_6 := "101001";
+    constant datacall_reg_opcode : bit_6 := "101000";
+    constant datacall_imm_opcode : bit_6 := "101001";
 
     -- operations with immediate AM
     -- immediate : MAX Rz #value

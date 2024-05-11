@@ -44,4 +44,8 @@ package mux_select_constants is
     constant jump_immediate                     : std_logic                    := '0';
     constant jump_rx                            : std_logic                    := '1';
 
+    -- DPCR 
+    constant dpcr_rz                            : std_logic                    := '0';
+    constant dpcr_immediate                     : std_logic                    := '1';
+
 end package;

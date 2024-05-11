@@ -7,9 +7,7 @@ use work.mux_select_constants.all;
 
 entity testbench_top_level is
     port (
-        t_DPCRwrite_enable  : out std_logic;
         t_zero_reg_reset    : out std_logic;
-        t_dpcr_select       : out std_logic;
         t_state_decode_fail : out std_logic
     );
 end entity;
@@ -18,7 +16,10 @@ architecture test of testbench_top_level is
     signal t_clock                              : std_logic := '0';
     signal t_enable                             : std_logic := '1';
     signal t_reset                              : std_logic := '0';
-    signal t_dprr                               : std_logic := '0';
+    signal t_dprr                               : std_logic_vector(31 downto 0);
+
+    signal t_dpcr_write_enable                  : std_logic := '0';
+    signal t_dpcr_select                        : std_logic;
 
     signal t_lsip                               : std_logic := '0';
     signal t_ssop                               : std_logic := '0';
@@ -59,11 +60,14 @@ architecture test of testbench_top_level is
     signal t_data_memory_data_in                : std_logic_vector(15 downto 0);
     signal t_data_memory_data_out               : std_logic_vector(15 downto 0);
 
+    signal t_dpcr_data_out                      : std_logic_vector(31 downto 0);
+    signal t_dprr_clear                         : std_logic;
+
     signal t_instruction_register_buffer_enable : std_logic;
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 46) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 54) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -128,18 +132,30 @@ architecture test of testbench_top_level is
         opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"0000", -- Load x0000 into $r3
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"EEEE", -- Load ERROR into $r0 to ensure correct reg is checked for 0 by ALU
         opcodes.am_immediate & opcodes.present & "0011" & "0000" & x"0029",
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"ABCD",     -- Dummy instruction that should be skipped
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"DCBA",     -- Instruction to resume (41)
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"ABCD",                 -- Dummy instruction that should be skipped
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"DCBA",                 -- Instruction to resume (41)
 
         -- Test Present FALSE
-        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"0024",     -- Store 0x25 (37) into $r6
-        opcodes.am_immediate & opcodes.present & "0111" & "0000" & x"002D", -- Jump to 45 if rz is 0 (never true)
-        opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"D1CC",     -- Should run
-        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"D1CC",     -- Should run
+        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"0024",                 -- Store 0x25 (37) into $r6
+        opcodes.am_immediate & opcodes.present & "0111" & "0000" & x"002D",             -- Jump to 45 if rz is 0 (never true)
+        opcodes.am_immediate & opcodes.ldr & "0011" & "0000" & x"D1CC",                 -- Should run
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"D1CC",                 -- Should run
+
+        -- Test DATACALL Reg
+        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"5678",                 -- Load 0x5678 into $r7
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1234",                 -- Load 0x1234 into $r1
+        opcodes.am_register & opcodes.datacall_reg_opcode & "0000" & "0001" & x"EEEE",  -- Should put x12345678 into DPRR and wait
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0420",                 -- Execute this instruction when unblocked
+
+        -- Test DATACALL Imm
+        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"89AB",                 -- Load 0x89AB into $r7
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1234",                 -- Load 0x1234 into $r1
+        opcodes.am_immediate & opcodes.datacall_reg_opcode & "0000" & "0001" & x"EEEE", -- Should put x12345678 into DPRR and wait
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0420",                 -- Execute this instruction when unblocked
 
         --------------------------------------------END OF FILE--------------------------------------------
 
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"      -- Buffer instruction to ensure the last instruction is completed (PC increment)
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"                  -- Buffer instruction to ensure the last instruction is completed (PC increment)
     );
 
     signal program_memory_data    : std_logic_vector(31 downto 0);
@@ -193,6 +209,14 @@ begin
 
             data_memory_register_write_enable  => t_data_memory_register_write_enable,
 
+            dpcr_enable                        => t_dpcr_write_enable,
+            dpcr_data_out                      => t_dpcr_data_out,
+            dpcr_data_select                   => t_dpcr_select,
+
+            -- DPRR
+            dprr_data_in                       => t_dprr,
+            dprr_clear                         => t_dprr_clear,
+
             z_register_write_enable            => t_z_register_write_enable,
             z_register_reset                   => t_z_register_reset,
 
@@ -210,12 +234,10 @@ begin
             addressing_mode                    => t_addressing_mode,
             opcode                             => t_opcode,
 
-            dprr                               => t_dprr,
+            dprr                               => t_dprr(1),
+            dprr_clear                         => t_dprr_clear,
             jump_select                        => t_jump_select,
-            DPCRwrite_enable                   => t_DPCRwrite_enable,
-
-            alu_register_write_enable          => t_alu_register_write_enable,
-            dpcr_select                        => t_dpcr_select,
+            dpcr_enable                        => t_dpcr_write_enable,
 
             alu_op_sel                         => t_alu_op_sel,
             alu_op1_sel                        => t_alu_op1_sel,
@@ -269,6 +291,13 @@ begin
         t_clock <= '0';
         wait for 10 ns;
         t_clock <= '1';
+    end process;
+
+    process
+    begin
+        wait for 1800 ns;
+        t_dprr(1) <= '1';
+        wait;
     end process;
 
 end architecture;
