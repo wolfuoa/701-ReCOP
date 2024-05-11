@@ -19,7 +19,7 @@ architecture test of testbench_top_level is
     signal t_dprr                               : std_logic_vector(31 downto 0);
 
     signal t_dpcr_write_enable                  : std_logic := '0';
-    signal t_dpcr_select                        : std_logic;
+    signal t_dpcr_select                        : std_logic := '0';
 
     signal t_lsip                               : std_logic := '0';
     signal t_ssop                               : std_logic := '0';
@@ -67,7 +67,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 54) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 53) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -148,10 +148,9 @@ architecture test of testbench_top_level is
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0420",                 -- Execute this instruction when unblocked
 
         -- Test DATACALL Imm
-        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"89AB",                 -- Load 0x89AB into $r7
-        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1234",                 -- Load 0x1234 into $r1
-        opcodes.am_immediate & opcodes.datacall_reg_opcode & "0000" & "0001" & x"EEEE", -- Should put x12345678 into DPRR and wait
-        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0420",                 -- Execute this instruction when unblocked
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"89AB",                 -- Load 0x1234 into $r1
+        opcodes.am_immediate & opcodes.datacall_imm_opcode & "0000" & "0001" & x"CDEF", -- Should put x89ABCDEF into DPRR and wait
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0421",                 -- Execute this instruction when unblocked
 
         --------------------------------------------END OF FILE--------------------------------------------
 
@@ -238,6 +237,7 @@ begin
             dprr_clear                         => t_dprr_clear,
             jump_select                        => t_jump_select,
             dpcr_enable                        => t_dpcr_write_enable,
+            dpcr_select                        => t_dpcr_select,
 
             alu_op_sel                         => t_alu_op_sel,
             alu_op1_sel                        => t_alu_op1_sel,
@@ -295,9 +295,13 @@ begin
 
     process
     begin
-        wait for 1800 ns;
+        wait for 2800 ns;
         t_dprr(1) <= '1';
-        wait;
+        wait for 20 ns;
+        t_dprr(1) <= '0';
+        wait for 300 ns;
+        t_dprr(1) <= '1';
+
     end process;
 
 end architecture;

@@ -333,7 +333,7 @@ begin
         );
 
     with dpcr_data_select select dpcr_data_in
-        <= rx_register_value_out & rz_register_value_out when '0',
+        <= rx_register_value_out & rz_register_value_out when mux_select_constants.dpcr_rz,
         rx_register_value_out & immediate_buffer_register_value_out when others;
 
     dprr_register_data_in <= dprr_data_in when (dprr_clear = '0') else

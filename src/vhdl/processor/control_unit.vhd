@@ -423,6 +423,7 @@ begin
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_aluout;
                 register_file_rz_select            <= '0';
+
             when mem_store_reg_at_reg =>
                 jump_select                        <= '0';
                 dpcr_enable                        <= '0';
@@ -475,7 +476,7 @@ begin
                 program_memory_read_enable         <= '0';
                 instruction_register_write_enable  <= '1'; -- changed
                 dprr_clear                         <= '0';
-                pc_write_enable                    <= '1'; -- changed 
+                pc_write_enable                    <= '0';
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= mux_select_constants.pc_input_select_aluout;
                 register_file_rz_select            <= '0';
@@ -689,25 +690,25 @@ begin
                 alu_register_write_enable          <= '0';
                 ssop                               <= '0';
                 z_register_reset                   <= '0';
-                data_memory_write_enable           <= '0';
-                instruction_register_buffer_enable <= '0';
-                dpcr_select                        <= '0';
-                alu_op_sel                         <= decoded_ALUop; -- changed
                 data_memory_data_select            <= "00";
+                data_memory_write_enable           <= '0';
+                dpcr_select                        <= '0';
+                alu_op_sel                         <= "00";
+                instruction_register_buffer_enable <= '0';
                 data_memory_address_select         <= "00";
+                register_file_rz_select            <= mux_select_constants.regfile_rz_r7;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= "00";
-                alu_op2_sel                        <= "00";
-                register_file_rz_select            <= '1'; -- changed
-                register_file_write_select         <= mux_select_constants.regfile_write_aluout;
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
+                register_file_write_select         <= "00";
                 z_register_write_enable            <= '0';
                 lsip                               <= '0';
                 program_memory_read_enable         <= '0';
-                instruction_register_write_enable  <= '0';
-                dprr_clear                         <= '0';
+                instruction_register_write_enable  <= '1';
                 pc_write_enable                    <= '1'; -- changed
                 pc_branch_conditional              <= '0';
-                pc_input_select                    <= "00";
+                dprr_clear                         <= '0';
+                pc_input_select                    <= mux_select_constants.pc_input_select_alu;
 
             when datacall_reg =>
                 jump_select                        <= '0';
@@ -720,7 +721,7 @@ begin
                 z_register_reset                   <= '0';
                 data_memory_write_enable           <= '0';
                 instruction_register_buffer_enable <= '0';
-                dpcr_select                        <= mux_select_constants.dpcr_immediate;
+                dpcr_select                        <= mux_select_constants.dpcr_rz;
                 alu_op_sel                         <= decoded_ALUop; -- changed
                 data_memory_data_select            <= "00";
                 data_memory_address_select         <= "00";
@@ -772,7 +773,7 @@ begin
 
     end process;
 
-    NEXT_STATE_DECODE : process (state, opcode, addressing_mode)
+    NEXT_STATE_DECODE : process (state, opcode, addressing_mode, dprr)
     begin
         case state is
             when instruction_fetch =>
@@ -908,10 +909,10 @@ begin
                 next_state                                     <= datacall_waiting;
 
             when datacall_waiting => state_decode_fail     <= '0';
-                if dprr = '0' then
-                    next_state <= datacall_waiting;
-                else
+                if dprr = '1' then
                     next_state <= instruction_fetch;
+                else
+                    next_state <= datacall_waiting;
                 end if;
 
             when others =>
