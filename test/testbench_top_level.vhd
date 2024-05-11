@@ -21,7 +21,6 @@ architecture test of testbench_top_level is
     signal t_dpcr_write_enable                  : std_logic := '0';
     signal t_dpcr_select                        : std_logic := '0';
 
-    signal t_lsip                               : std_logic := '0';
     signal t_ssop                               : std_logic := '0';
 
     signal t_pc_write_enable                    : std_logic;
@@ -49,6 +48,9 @@ architecture test of testbench_top_level is
     signal t_rx_register_write_enable           : std_logic;
     signal t_register_file_write_enable         : std_logic;
 
+    signal t_sip_value                          : std_logic_vector(15 downto 0);
+    signal t_sop_register_value_out             : std_logic_vector(15 downto 0);
+
     signal t_pc_branch_conditional              : std_logic;
     signal t_pc_input_select                    : std_logic_vector(1 downto 0);
 
@@ -67,7 +69,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 67) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 73) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -174,6 +176,18 @@ architecture test of testbench_top_level is
         opcodes.am_immediate & opcodes.strpc & "0000" & "0000" & x"0008",               -- DM[x0008] <= PC + 1
         opcodes.am_direct & opcodes.ldr & "1111" & "0000" & x"0008",                    -- $r15 <= DM[x0008] = 65 (x42)
 
+        -- Test Clear Z
+        opcodes.am_immediate & opcodes.ldr & "0111" & "0000" & x"0001",                 -- $r7 <= x0001 
+        opcodes.am_immediate & opcodes.subr & "0111" & "0000" & x"0001",                -- 1 - 1 should assert Z register as 1, $r7 stays at 1
+        opcodes.am_inherent & opcodes.clfz & "1111" & "1111" & x"EEEE",                 -- 1 - 1 should assert Z register as 1, $r7 stays at 1
+
+        -- Test ssop
+        opcodes.am_immediate & opcodes.ldr & "1101" & "0000" & x"F00D",                 -- $r13 <= xF00D c
+        opcodes.am_register & opcodes.ssop & "0000" & "1101" & x"EEEE",                 -- Load xF00D into SOP register
+
+        -- Test lsip
+        opcodes.am_register & opcodes.lsip & "1110" & "0000" & x"EEEE",                 -- Load sip into $14
+
         --------------------------------------------END OF FILE--------------------------------------------
 
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0E0F"                  -- Buffer instruction to ensure the last instruction is completed (PC increment)
@@ -241,10 +255,9 @@ begin
             z_register_write_enable            => t_z_register_write_enable,
             z_register_reset                   => t_z_register_reset,
 
-            lsip                               => t_lsip,
             ssop                               => t_ssop,
-            sip_register_value_in              => x"0000",
-            sop_register_value_out             => open
+            sip_register_value_in              => t_sip_value,
+            sop_register_value_out             => t_sop_register_value_out
         );
 
     control_unit_inst : entity work.control_unit
@@ -281,8 +294,7 @@ begin
 
             instruction_register_buffer_enable => t_instruction_register_buffer_enable,
 
-            lsip                               => t_lsip,
-            ssop                               => t_ssop,
+            ssop_port                          => t_ssop,
 
             data_memory_write_enable           => t_data_memory_write_enable,
             data_memory_register_write_enable  => t_data_memory_register_write_enable,
@@ -324,7 +336,12 @@ begin
         t_dprr(1) <= '0';
         wait for 300 ns;
         t_dprr(1) <= '1';
-
     end process;
 
+    process
+    begin
+        wait for 2800 ns;
+        t_sip_value <= x"F0CC";
+        wait;
+    end process;
 end architecture;

@@ -65,7 +65,6 @@ entity data_path is
         instruction_register_buffer_enable : in  std_logic;
         --END Control unit inputs
         -- SIP and SOP Control Signals``
-        lsip                               : in  std_logic;
         ssop                               : in  std_logic;
 
         -- External I/O
@@ -103,7 +102,6 @@ architecture bhv of data_path is
     signal alu_register_value_out               : std_logic_vector(15 downto 0);
 
     signal sip_register_value_out               : std_logic_vector(15 downto 0);
-    signal sop_register_value_in                : std_logic_vector(15 downto 0);
 
     signal data_memory_register_data_in         : std_logic_vector(15 downto 0);
     signal data_memory_register_data_out        : std_logic_vector(15 downto 0);
@@ -292,12 +290,12 @@ begin
         port map(
             clock        => clock,
             reset        => reset,
-            write_enable => lsip,
+            write_enable => '1',
             data_in      => sip_register_value_in,
             data_out     => sip_register_value_out
         );
 
-    register_buffer_inst : entity work.register_buffer
+    sop_register : entity work.register_buffer
         generic map(
             width => 16
         )
@@ -305,7 +303,7 @@ begin
             clock        => clock,
             reset        => reset,
             write_enable => ssop,
-            data_in      => sop_register_value_in,
+            data_in      => rx_register_value_out,
             data_out     => sop_register_value_out
         );
     dprr : entity work.register_buffer
