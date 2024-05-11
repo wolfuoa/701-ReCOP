@@ -29,7 +29,7 @@ entity data_path is
         jump_select                        : in  std_logic;
 
         register_file_write_enable         : in  std_logic;
-        register_file_write_select         : in  std_logic_vector(1 downto 0);
+        register_file_write_select         : in  std_logic_vector(2 downto 0);
         register_file_rz_select            : in  std_logic;
 
         instruction_register_write_enable  : in  std_logic;
@@ -115,6 +115,8 @@ architecture bhv of data_path is
 
     signal dprr_register_data_in                : std_logic_vector(31 downto 0);
 
+    signal max_result                           : std_logic_vector(15 downto 0);
+
     signal not_clock                            : std_logic;
 
 begin
@@ -195,6 +197,7 @@ begin
             data_memory           => data_memory_register_data_out,
             alu_out               => alu_register_value_out,
             sip                   => sip_register_value_out,
+            max_result            => max_result,
             rx                    => rx_register_value_in,
             rz                    => rz_register_value_in
         );
@@ -328,6 +331,13 @@ begin
             write_enable => dpcr_enable,
             data_in      => dpcr_data_in,
             data_out     => dpcr_data_out
+        );
+
+    zoranmaxx : entity work.max
+        port map(
+            op1    => rz_register_value_out,
+            op2    => immediate_buffer_register_value_out,
+            result => max_result
         );
 
     with dpcr_data_select select dpcr_data_in

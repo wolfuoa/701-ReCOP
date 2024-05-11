@@ -19,10 +19,11 @@ package mux_select_constants is
     constant data_memory_data_rx                : std_logic_vector(1 downto 0) := "10";
 
     -- Instruction register write
-    constant regfile_write_immediate            : std_logic_vector(1 downto 0) := "00";
-    constant regfile_write_aluout               : std_logic_vector(1 downto 0) := "01";
-    constant regfile_write_data_memory_register : std_logic_vector(1 downto 0) := "10";
-    constant regfile_write_sip                  : std_logic_vector(1 downto 0) := "11";
+    constant regfile_write_immediate            : std_logic_vector(2 downto 0) := "000";
+    constant regfile_write_aluout               : std_logic_vector(2 downto 0) := "001";
+    constant regfile_write_data_memory_register : std_logic_vector(2 downto 0) := "010";
+    constant regfile_write_sip                  : std_logic_vector(2 downto 0) := "011";
+    constant regfile_write_max                  : std_logic_vector(2 downto 0) := "100";
 
     -- Regfile Rz Select
     constant regfile_rz_normal                  : std_logic                    := '0';

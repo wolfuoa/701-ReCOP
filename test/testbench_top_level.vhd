@@ -25,7 +25,7 @@ architecture test of testbench_top_level is
 
     signal t_pc_write_enable                    : std_logic;
     signal t_jump_select                        : std_logic;
-    signal t_register_file_write_select         : std_logic_vector(1 downto 0) := "00";
+    signal t_register_file_write_select         : std_logic_vector(2 downto 0) := "000";
     signal t_register_file_rz_select            : std_logic;
     signal t_instruction_register_write_enable  : std_logic;
     signal t_alu_register_write_enable          : std_logic;
@@ -69,7 +69,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 73) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 76) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -187,6 +187,11 @@ architecture test of testbench_top_level is
 
         -- Test lsip
         opcodes.am_register & opcodes.lsip & "1110" & "0000" & x"EEEE",                 -- Load sip into $14
+
+        -- Test Max
+        opcodes.am_immediate & opcodes.ldr & "0100" & "0000" & x"1000",                 -- $r4 <= x1000 c
+        opcodes.am_immediate & opcodes.max & "0100" & "0000" & x"0900",                 -- $r4 remains x1000
+        opcodes.am_immediate & opcodes.max & "0100" & "0000" & x"1001",                 -- $r4 changes to x1001
 
         --------------------------------------------END OF FILE--------------------------------------------
 
