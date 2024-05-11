@@ -67,7 +67,7 @@ architecture test of testbench_top_level is
 
     signal not_t_clock                          : std_logic;
 
-    type memory_array is array (0 to 54) of std_logic_vector(31 downto 0);
+    type memory_array is array (0 to 67) of std_logic_vector(31 downto 0);
     signal progam_memory_inst : memory_array := (
         -- AM(2) Opcode(6) Rz(4) Rx(4) Operand(16) and register - register 
         opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1fff",   -- Load 1 0x1fff into Reg(1)
@@ -153,7 +153,26 @@ architecture test of testbench_top_level is
         opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"0421",                 -- Execute this instruction when unblocked
 
         -- Test No-Op
-        opcodes.am_immediate & opcodes.noop & "0000" & "0000" & x"EEEE",                -- No operation done
+        opcodes.am_immediate & opcodes.noop & "0000" & "0000" & x"EEEE",                -- No operation done (53)
+
+        -- Test Sizzm True (Jump if Z register is 1)
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"4204",                 -- Load 0x1234 into $r1
+        opcodes.am_immediate & opcodes.subvr & "0000" & "0001" & x"4204",               -- Perform sub that should give 0
+        opcodes.am_register & opcodes.sz & "0000" & "0001" & x"003B",                   -- jump to 59
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"EEEE",                 -- Needs to be skipped because conditional was true
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"EEEE",                 -- Needs to be skipped because conditional was true
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"900D",                 -- Should jump to here (59)
+
+        -- Test Sizzm False (Jump if Z register is 1)
+        opcodes.am_immediate & opcodes.ldr & "0001" & "0000" & x"1000",                 -- Load 0x1234 into $r1
+        opcodes.am_immediate & opcodes.subvr & "0010" & "0001" & x"0500",               -- Subtract x500 from x1000, srore result in $r2
+        opcodes.am_register & opcodes.sz & "0000" & "0001" & x"0040",                   -- Should not take the jump
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"CCCC",                 -- Should not be skipped
+        opcodes.am_immediate & opcodes.ldr & "0000" & "0000" & x"CCCD",                 -- Should not be skipped    (0040)
+
+        -- Test strpc
+        opcodes.am_immediate & opcodes.strpc & "0000" & "0000" & x"0008",               -- DM[x0008] <= PC + 1
+        opcodes.am_direct & opcodes.ldr & "1111" & "0000" & x"0008",                    -- $r15 <= DM[x0008] = 65 (x42)
 
         --------------------------------------------END OF FILE--------------------------------------------
 
@@ -245,6 +264,7 @@ begin
             alu_op_sel                         => t_alu_op_sel,
             alu_op1_sel                        => t_alu_op1_sel,
             alu_op2_sel                        => t_alu_op2_sel,
+            alu_register_write_enable          => t_alu_register_write_enable,
 
             data_memory_address_select         => t_data_memory_address_select,
             data_memory_data_select            => t_data_memory_data_select,

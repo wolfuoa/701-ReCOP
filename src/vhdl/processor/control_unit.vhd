@@ -70,7 +70,7 @@ architecture rtl of control_unit is
         mem_store_reg_at_imm, sub_no_store,
         mem_write_back, jump_imm, jump_reg, present_state,
         branch_conditional, datacall_imm, datacall_reg_access,
-        datacall_reg, datacall_waiting); -- TODO: Add all other states 
+        datacall_reg, datacall_waiting, store_pc); -- TODO: Add all other states 
     signal state         : state_type := no_op;
     signal next_state    : state_type;
     signal decoded_ALUop : std_logic_vector(1 downto 0);
@@ -767,7 +767,34 @@ begin
                 pc_write_enable                    <= '0';
                 pc_branch_conditional              <= '0';
                 pc_input_select                    <= "00";
-
+            when store_pc =>
+                jump_select                        <= '0';
+                dpcr_enable                        <= '0';
+                data_memory_register_write_enable  <= '0';
+                rz_register_write_enable           <= '0';
+                rx_register_write_enable           <= '0';
+                alu_register_write_enable          <= '0';
+                ssop                               <= '0';
+                z_register_reset                   <= '0';
+                data_memory_data_select            <= mux_select_constants.data_memory_data_aluout; -- changed
+                data_memory_write_enable           <= '1';
+                dpcr_select                        <= '0';
+                alu_op_sel                         <= "00";
+                instruction_register_buffer_enable <= '0';
+                data_memory_address_select         <= mux_select_constants.data_memory_address_immediate; -- changed
+                register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
+                register_file_write_enable         <= '0';
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one;
+                register_file_write_select         <= "00";
+                z_register_write_enable            <= '0';
+                lsip                               <= '0';
+                program_memory_read_enable         <= '0';
+                instruction_register_write_enable  <= '1'; -- changed
+                pc_write_enable                    <= '1'; -- changed
+                pc_branch_conditional              <= '0';
+                dprr_clear                         <= '0';
+                pc_input_select                    <= mux_select_constants.pc_input_select_alu;
             when others =>
         end case;
 
@@ -786,6 +813,7 @@ begin
                     (opcode = present) or
                     (opcode = datacall_imm_opcode) or
                     (opcode = noop) or
+                    (opcode = sz) or
                     ((opcode = jmp) and (addressing_mode = am_register)) or
                     ((opcode = ldr) and (addressing_mode = am_register)) then
                     state_decode_fail <= '0';
@@ -806,6 +834,10 @@ begin
                 elsif (opcode = jmp) and (addressing_mode = am_immediate) then
                     state_decode_fail <= '0';
                     next_state        <= jump_imm;
+
+                elsif (opcode = strpc) then
+                    state_decode_fail <= '0';
+                    next_state        <= store_pc;
 
                 else
                     state_decode_fail <= '1';
@@ -832,9 +864,13 @@ begin
                 elsif (opcode = present) then
                     state_decode_fail <= '0';
                     next_state        <= present_state;
+
                 elsif (opcode = datacall_imm_opcode) then
                     state_decode_fail <= '0';
                     next_state        <= datacall_imm;
+                elsif (opcode = sz) then
+                    state_decode_fail <= '0';
+                    next_state        <= branch_conditional;
                 elsif (opcode = subr) then
                     state_decode_fail <= '0';
                     next_state        <= sub_no_store;
@@ -911,6 +947,9 @@ begin
 
             when datacall_reg => state_decode_fail         <= '0';
                 next_state                                     <= datacall_waiting;
+
+            when store_pc => state_decode_fail             <= '0';
+                next_state                                     <= instruction_fetch;
 
             when datacall_waiting => state_decode_fail     <= '0';
                 if dprr = '1' then
