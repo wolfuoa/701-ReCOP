@@ -1,3 +1,9 @@
+## Compiling from scratch
+
+1. Make sure you have [rust](https://www.rust-lang.org/tools/install) installed
+2. Open a terminal in `src\rust`
+3. Run `cargo run <asssembly relative path> <output file path>`
+
 ## Assember instructions
 
 | Instruction Name | Usage                                               | Instruction Type |
