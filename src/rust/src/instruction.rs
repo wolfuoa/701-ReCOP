@@ -218,9 +218,92 @@ impl Instruction {
             "LSIP" | "lsip" => Some(Instruction::LSIP),
             "SSOP" | "ssop" => Some(Instruction::SSOP),
             "NOOP" | "noop" => Some(Instruction::NOOP),
-            "MAX" | "max" => Some(Instruction::MAXI),
+            "MAXI" | "maxi" => Some(Instruction::MAXI),
             "STRPC" | "strpc" => Some(Instruction::STRPC),
             _ => None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct InstructionEntry {
+    pub instruction_format: InstructionFormat,
+    pub instruction: String,
+    pub arg_one: Option<String>,
+    pub arg_two: Option<String>,
+    pub arg_three: Option<String>,
+}
+
+impl InstructionEntry {
+    pub fn new(instruction: String, instruction_format: InstructionFormat) -> Self {
+        Self {
+            instruction_format: instruction_format,
+            instruction: instruction,
+            arg_one: None,
+            arg_two: None,
+            arg_three: None,
+        }
+    }
+
+    pub fn encode_instruction(self) -> String {
+        println!("The instruction for the current line is: {:?}", self);
+        match self.instruction_format {
+            InstructionFormat::RzRxOperand =>
+                format!(
+                    "{}{}{}{}",
+                    self.instruction,
+                    self.arg_one.unwrap(),
+                    self.arg_two.unwrap(),
+                    self.arg_three.unwrap()
+                ),
+
+            InstructionFormat::RzRzRx =>
+                format!(
+                    "{}{}{}{:016b}",
+                    self.instruction,
+                    self.arg_one.unwrap(),
+                    self.arg_three.unwrap(),
+                    0
+                ),
+
+            InstructionFormat::RzOperand =>
+                format!(
+                    "{}{}{:04b}{}",
+                    self.instruction,
+                    self.arg_one.unwrap(),
+                    0,
+                    self.arg_two.unwrap()
+                ),
+
+            InstructionFormat::RxOperand =>
+                format!(
+                    "{}{:04b}{}{}",
+                    self.instruction,
+                    0,
+                    self.arg_one.unwrap(),
+                    self.arg_two.unwrap()
+                ),
+
+            InstructionFormat::RzRx =>
+                format!(
+                    "{}{}{}{:016b}",
+                    self.instruction,
+                    self.arg_one.unwrap(),
+                    self.arg_two.unwrap(),
+                    0
+                ),
+
+            InstructionFormat::Operand =>
+                format!("{}{:04b}{:04b}{}", self.instruction, 0, 0, self.arg_one.unwrap()),
+
+            InstructionFormat::Rx =>
+                format!("{}{:04b}{}{:016b}", self.instruction, 0, self.arg_one.unwrap(), 0),
+
+            InstructionFormat::Rz =>
+                format!("{}{}{:04b}{:016b}", self.instruction, self.arg_one.unwrap(), 0, 0),
+
+            InstructionFormat::Nothing =>
+                format!("{}{:04b}{:04b}{:016b}", self.instruction, 0, 0, 0),
         }
     }
 }

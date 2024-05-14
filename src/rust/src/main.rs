@@ -1,4 +1,8 @@
-mod opcodes;
+mod instruction;
+
+use crate::instruction::Instruction;
+use crate::instruction::InstructionEntry;
+use crate::instruction::InstructionFormat;
 
 use std::borrow::Borrow;
 use std::env;
@@ -7,92 +11,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use opcodes::InstructionFormat;
-
-use crate::opcodes::Instruction;
-
-#[derive(Debug)]
-struct InstructionEntry {
-    instruction_format: InstructionFormat,
-    instruction: String,
-    arg_one: Option<String>,
-    arg_two: Option<String>,
-    arg_three: Option<String>,
-}
-
-impl InstructionEntry {
-    fn new(instruction: String, instruction_format: InstructionFormat) -> Self {
-        Self {
-            instruction_format: instruction_format,
-            instruction: instruction,
-            arg_one: None,
-            arg_two: None,
-            arg_three: None,
-        }
-    }
-
-    fn encode_instruction(self) -> String {
-        println!("The instruction for the current line is: {:?}", self);
-        match self.instruction_format {
-            InstructionFormat::RzRxOperand =>
-                format!(
-                    "{}{}{}{}",
-                    self.instruction,
-                    self.arg_one.unwrap(),
-                    self.arg_two.unwrap(),
-                    self.arg_three.unwrap()
-                ),
-
-            InstructionFormat::RzRzRx =>
-                format!(
-                    "{}{}{}{:016b}",
-                    self.instruction,
-                    self.arg_one.unwrap(),
-                    self.arg_three.unwrap(),
-                    0
-                ),
-
-            InstructionFormat::RzOperand =>
-                format!(
-                    "{}{}{:04b}{}",
-                    self.instruction,
-                    self.arg_one.unwrap(),
-                    0,
-                    self.arg_two.unwrap()
-                ),
-
-            InstructionFormat::RxOperand =>
-                format!(
-                    "{}{:04b}{}{}",
-                    self.instruction,
-                    0,
-                    self.arg_one.unwrap(),
-                    self.arg_two.unwrap()
-                ),
-
-            InstructionFormat::RzRx =>
-                format!(
-                    "{}{}{}{:016b}",
-                    self.instruction,
-                    self.arg_one.unwrap(),
-                    self.arg_two.unwrap(),
-                    0
-                ),
-
-            InstructionFormat::Operand =>
-                format!("{}{:04b}{:04b}{}", self.instruction, 0, 0, self.arg_one.unwrap()),
-
-            InstructionFormat::Rx =>
-                format!("{}{:04b}{}{:016b}", self.instruction, 0, self.arg_one.unwrap(), 0),
-
-            InstructionFormat::Rz =>
-                format!("{}{}{:04b}{:016b}", self.instruction, self.arg_one.unwrap(), 0, 0),
-
-            InstructionFormat::Nothing =>
-                format!("{}{:04b}{:04b}{:016b}", self.instruction, 0, 0, 0),
-        }
-    }
-}
+static FILE_HEADER: &str =
+    "DEPTH = 65536;\nWIDTH = 32;\nADDRESS_RADIX = DEC;\nDATA_RADIX = BIN;\nCONTENT\nBEGIN\n";
+static FILE_END: &str = "END;";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -107,8 +28,8 @@ fn main() {
 
     println!("The file {} was opened", file_path);
 
-    let mut program: String = "".to_string();
-
+    let mut program: String = FILE_HEADER.to_string();
+    let mut program_counter: i32 = 0;
     for line in fs::read_to_string(file_path).unwrap().lines() {
         println!("Current line is {}", line);
 
@@ -143,9 +64,15 @@ fn main() {
         }
 
         let encoded_instruction = current_instruction.encode_instruction();
-        program.push_str(&encoded_instruction);
+
+        program.push_str(&format!("{} : ", program_counter));
+        program.push_str(&format!("{};\n", encoded_instruction));
+
+        program_counter += 1;
         // println!("{}", encoded_instruction);
     }
+
+    program.push_str(FILE_END);
 
     match file.write_all(program.as_bytes()) {
         Err(why) => panic!("couldn't write to {}: {}", display, why),
