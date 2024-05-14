@@ -24,6 +24,20 @@ pub enum Instruction {
     SSOP,
     NOOP,
     MAXI,
+    STRPC,
+}
+
+#[derive(Debug)]
+pub enum InstructionFormat {
+    RzRxOperand,
+    RzRzRx,
+    RzOperand,
+    RxOperand,
+    RzRx,
+    Operand,
+    Rx,
+    Rz,
+    Nothing,
 }
 
 enum OpCode {
@@ -44,6 +58,7 @@ enum OpCode {
     SSOP,
     NOOP,
     MAX,
+    STRPC,
 }
 
 enum InstructionType {
@@ -73,6 +88,7 @@ impl OpCode {
             OpCode::SSOP => "111010".to_owned(),
             OpCode::NOOP => "110100".to_owned(),
             OpCode::MAX => "011110".to_owned(),
+            OpCode::STRPC => "011101".to_owned(),
         }
     }
 }
@@ -120,6 +136,7 @@ impl Instruction {
             Instruction::SSOP => InstructionType::Register.am_bits(),
             Instruction::NOOP => InstructionType::Inherent.am_bits(),
             Instruction::MAXI => InstructionType::Immediate.am_bits(),
+            Instruction::STRPC => InstructionType::Immediate.am_bits(),
         }
     }
 
@@ -142,6 +159,36 @@ impl Instruction {
             Instruction::SSOP => OpCode::SSOP.opcode_bits(),
             Instruction::NOOP => OpCode::NOOP.opcode_bits(),
             Instruction::MAXI => OpCode::MAX.opcode_bits(),
+            Instruction::STRPC => OpCode::STRPC.opcode_bits(),
+        }
+    }
+
+    pub fn instruction_format(self) -> InstructionFormat {
+        match self {
+            Instruction::ANDR | Instruction::ADDR | Instruction::ORR => InstructionFormat::RzRzRx,
+
+            Instruction::ADDI | Instruction::ORI | Instruction::ANDI | Instruction::SUBI =>
+                InstructionFormat::RzRxOperand,
+
+            Instruction::LDR | Instruction::STRR => InstructionFormat::RzRx,
+
+            Instruction::JR | Instruction::DATACALLI | Instruction::STRD =>
+                InstructionFormat::RxOperand,
+
+            | Instruction::MAXI
+            | Instruction::STRI
+            | Instruction::LDI
+            | Instruction::PRESENT
+            | Instruction::LDD
+            | Instruction::SUBZ => InstructionFormat::RzOperand,
+
+            Instruction::J | Instruction::STRPC | Instruction::SZ => InstructionFormat::Operand,
+
+            Instruction::SSOP | Instruction::DATACALLR => InstructionFormat::Rx,
+
+            Instruction::LSIP => InstructionFormat::Rz,
+
+            Instruction::NOOP | Instruction::CLFZ => InstructionFormat::Nothing,
         }
     }
 
@@ -172,6 +219,7 @@ impl Instruction {
             "SSOP" | "ssop" => Some(Instruction::SSOP),
             "NOOP" | "noop" => Some(Instruction::NOOP),
             "MAX" | "max" => Some(Instruction::MAXI),
+            "STRPC" | "strpc" => Some(Instruction::STRPC),
             _ => None,
         }
     }

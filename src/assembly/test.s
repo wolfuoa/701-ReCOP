@@ -1,1 +1,1 @@
-ldr     $r4 #1000
+ldi     $r4 #1000 -- Oliver Sinner
