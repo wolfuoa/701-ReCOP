@@ -80,7 +80,7 @@ begin
     generic map(
         clock_enable_input_a   => "BYPASS",
         clock_enable_output_a  => "BYPASS",
-        init_file              => "/programs/mips.mif", -- Replace with absolute path in modelsim
+        init_file              => "C:\Users\AKLbc\Desktop\Development\701-ReCOP\src\vhdl\memory\programs\mips.mif", -- Replace with absolute path in modelsim
         intended_device_family => "Cyclone II",
         lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
         lpm_type               => "altsyncram",
