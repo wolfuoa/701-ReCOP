@@ -31,73 +31,73 @@
 -- Zoran Salcic
 
 library ieee;
-  use ieee.std_logic_1164.all;
+use ieee.std_logic_1164.all;
 
 library altera_mf;
-  use altera_mf.all;
+use altera_mf.all;
 
 entity prog_mem is
-  port (
-    address : in  STD_LOGIC_VECTOR(15 downto 0);
-    clock   : in  STD_LOGIC := '1';
-    q       : out STD_LOGIC_VECTOR(31 downto 0)
-  );
+    port (
+        address : in  std_logic_vector(15 downto 0);
+        clock   : in  std_logic := '1';
+        q       : out std_logic_vector(31 downto 0)
+    );
 end entity;
 
 architecture SYN of prog_mem is
 
-  signal sub_wire0 : STD_LOGIC_VECTOR(31 downto 0);
+    signal sub_wire0 : std_logic_vector(31 downto 0);
 
-  component altsyncram
-    generic (
-      clock_enable_input_a   : STRING;
-      clock_enable_output_a  : STRING;
-      init_file              : STRING;
-      intended_device_family : STRING;
-      lpm_hint               : STRING;
-      lpm_type               : STRING;
-      maximum_depth          : NATURAL;
-      numwords_a             : NATURAL;
-      operation_mode         : STRING;
-      outdata_aclr_a         : STRING;
-      outdata_reg_a          : STRING;
-      ram_block_type         : STRING;
-      widthad_a              : NATURAL;
-      width_a                : NATURAL;
-      width_byteena_a        : NATURAL
-    );
-    port (
-      address_a : in  STD_LOGIC_VECTOR(15 downto 0);
-      clock0    : in  STD_LOGIC;
-      q_a       : out STD_LOGIC_VECTOR(31 downto 0)
-    );
-  end component;
+    component altsyncram
+        generic (
+            clock_enable_input_a   : string;
+            clock_enable_output_a  : string;
+            init_file              : string;
+            intended_device_family : string;
+            lpm_hint               : string;
+            lpm_type               : string;
+            maximum_depth          : natural;
+            numwords_a             : natural;
+            operation_mode         : string;
+            outdata_aclr_a         : string;
+            outdata_reg_a          : string;
+            ram_block_type         : string;
+            widthad_a              : natural;
+            width_a                : natural;
+            width_byteena_a        : natural
+        );
+        port (
+            address_a : in  std_logic_vector(15 downto 0);
+            clock0    : in  std_logic;
+            q_a       : out std_logic_vector(31 downto 0)
+        );
+    end component;
 
 begin
-  q <= sub_wire0;
+    q <= sub_wire0;
 
-  altsyncram_component: altsyncram
-    generic map (
-      clock_enable_input_a   => "BYPASS",
-      clock_enable_output_a  => "BYPASS",
-      init_file              => "../../../../../../../Dev/Code/CS701/Recop/rawOutput.mif",
-      intended_device_family => "Cyclone II",
-      lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
-      lpm_type               => "altsyncram",
-      maximum_depth          => 4096,
-      numwords_a             => 65536,
-      operation_mode         => "ROM",
-      outdata_aclr_a         => "NONE",
-      outdata_reg_a          => "UNREGISTERED",
-      ram_block_type         => "M4K",
-      widthad_a              => 16,
-      width_a                => 32,
-      width_byteena_a        => 1
+    altsyncram_component : altsyncram
+    generic map(
+        clock_enable_input_a   => "BYPASS",
+        clock_enable_output_a  => "BYPASS",
+        init_file              => "/programs/mips.mif", -- Replace with absolute path in modelsim
+        intended_device_family => "Cyclone II",
+        lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
+        lpm_type               => "altsyncram",
+        maximum_depth          => 4096,
+        numwords_a             => 65536,
+        operation_mode         => "ROM",
+        outdata_aclr_a         => "NONE",
+        outdata_reg_a          => "UNREGISTERED",
+        ram_block_type         => "M4K",
+        widthad_a              => 16,
+        width_a                => 32,
+        width_byteena_a        => 1
     )
-    port map (
-      address_a => address,
-      clock0    => clock,
-      q_a       => sub_wire0
+    port map(
+        address_a => address,
+        clock0    => clock,
+        q_a       => sub_wire0
     );
 
 end architecture;
