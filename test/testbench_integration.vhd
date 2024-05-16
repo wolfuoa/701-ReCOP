@@ -18,6 +18,9 @@ architecture test of testbench_integration is
 begin
 
     top_level_inst : entity work.top_level
+        generic map(
+            program_file_path => "C:\Users\AKLbc\Desktop\Development\701-ReCOP\src\programs\loop.mif"
+        )
         port map(
             clock             => t_clock,
             enable            => t_enable,
@@ -39,9 +42,9 @@ begin
 
     CLOCK : process
     begin
-        wait for 10 ns;
         t_clock <= '1';
         wait for 10 ns;
         t_clock <= '0';
+        wait for 10 ns;
     end process;
 end architecture;

@@ -173,7 +173,7 @@ begin
             START_ADDR => (others => '0')
         )
         port map(
-            clock           => clock,
+            clock           => not_clock,
             reset           => reset,
             write_enable    => pc_write, -- Needs to be different from the input port one
             pc_input_select => pc_input_select,

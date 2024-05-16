@@ -1,0 +1,13 @@
+ldi $r0 #15 -- Loop max 15 in r0
+ldi $r1 #0 -- init r2 to 0
+ldi $r2 #0 -- load 0 into counter register
+ldi $r3 #2 -- Load 2 into r3
+SUBZ $r1 #15         -- Check equality with 15
+SZ #9                -- branch if zero
+ADDI $r1 $r1 #1      -- increment r1
+ADDR $r2 $r2 $r3     -- work
+j #4                 -- j loop
+LDI $r15 #68 -- D 68
+LDI $r14 #79 -- O 79
+LDI $r13 #78 -- N 78
+LDI $r12 #69 -- E 69

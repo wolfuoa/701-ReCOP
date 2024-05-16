@@ -6,6 +6,9 @@ use work.opcodes;
 use work.mux_select_constants.all;
 
 entity top_level is
+    generic (
+        program_file_path : string
+    );
     port (
         clock             : in  std_logic;
         enable            : in  std_logic := '1';
@@ -180,6 +183,9 @@ begin
         );
 
     program_memory : entity work.prog_mem
+        generic map(
+            program_file_path => program_file_path
+        )
         port map(
             address => program_memory_address,
             clock   => clock,
