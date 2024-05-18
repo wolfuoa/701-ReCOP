@@ -23,11 +23,11 @@ architecture b of program_top_level is
     signal dpcr_data_out    : std_logic_vector(31 downto 0);
     signal unblock_datacall : std_logic;
 begin
-    reset            <= KEY(0);
-    unblock_datacall <= KEY(1);
+    reset <= not KEY(0);
+    -- unblock_datacall <= not KEY(1);
 
-    LEDG             <= dpcr_data_out(8 downto 0);
-    LEDR             <= dpcr_data_out(26 downto 9);
+    LEDG  <= dpcr_data_out(8 downto 0);
+    LEDR  <= dpcr_data_out(31 downto 15);
 
     top_level_inst : entity work.top_level
         generic map(
@@ -36,7 +36,7 @@ begin
         port map(
             clock                   => CLOCK_50,
             enable                  => '1',
-            dprr(0)                 => unblock_datacall,
+            dprr(1)                 => unblock_datacall,
             sip_data_in(9 downto 0) => SW,
             reset                   => reset,
             dpcr_data_out           => dpcr_data_out,
@@ -67,5 +67,18 @@ begin
             input_digit => sop_data_out(15 downto 12),
             sseg_output => HEX3
         );
+
+    process (CLOCK_50)
+        variable edge : std_logic;
+    begin
+        if rising_edge(CLOCK_50) then
+            if KEY(1) = '0' and edge = '1' then
+                unblock_datacall <= '1';
+            else
+                unblock_datacall <= '0';
+            end if;
+            edge := KEY(1);
+        end if;
+    end process;
 
 end architecture;

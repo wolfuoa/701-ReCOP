@@ -1,6 +1,6 @@
 datacallr $r7 -- Datacall (wait for key press) with R7
 lsip $r7 -- LSIP into R7
 addi $r1 $r7 #0 -- Load r7 into r1 for maxing
-maxi $r1 #69 -- check max and load maxi 
+maxi $r1 #105 -- check max and load maxi 
 ssop $r1 -- SSOP R1
 j #0 -- Jump back to datacall 

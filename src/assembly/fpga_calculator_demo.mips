@@ -1,0 +1,23 @@
+-- fpga_calculator_demo.mips
+-- author nwol626 bcho 
+-- Made in collaboration with MORTEZA BIGLARI-ABHARI
+-- Demonstration of simple adding calculator using ReCOP
+-- Feel free to change the program body for your experiments
+
+----------------EDIT AT YOUR OWN PERIL---------------
+datacallr $r7 -- Datacall (wait for key press) with R7
+lsip $r7 -- LSIP into R7
+addi $r1 $r7 #0 -- Load r7 into r1 for first operand
+
+datacallr $r7 -- Datacall (wait for key press) with R7
+lsip $r7 -- LSIP into R7
+addi $r2 $r7 #0 -- Load r7 into r2 for second operand
+------------------------------------------------------
+
+-- Can change this line to any other arithmetic reg-reg operation
+------------------------------------------------------
+addr $r1 $r1 $r2
+------------------------------------------------------
+
+ssop $r1 -- SSOP R1
+j #0 -- Jump back to datacall 
