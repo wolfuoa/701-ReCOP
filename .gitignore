@@ -76,7 +76,6 @@ PLLJ_PLLSPE_INFO.txt
 
 # ignore ModelSim generated files and directories (temp files and so on)
 [_@]*
-*/modelsim.ini
 
 # ignore compilation output of ModelSim
 *.mti
