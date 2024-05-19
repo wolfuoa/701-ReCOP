@@ -31,14 +31,13 @@ set library_file_list {
                            }
                            test_library   {
                                            ../testbench_alu.vhd
-                                           ../testbench_control_unit_immediate.vhd
-                                           ../testbench_control_unit_register.vhd
                                            ../testbench_pc.vhd
                                            ../testbench_register_file.vhd
-                                           ../testbench_data_memory.vhd
-                                           ../testbench_register_buffer.vhd
                                            ../testbench_instruction_register.vhd
                                            ../testbench_control_unit.vhd
+                                           ../testbench_control_unit_register.vhd
+                                           ../testbench_control_unit_immediate.vhd
+                                           ../testbench_register_buffer.vhd
                                            ../testbench_top_level.vhd
                                            ../testbench_integration.vhd
                            }

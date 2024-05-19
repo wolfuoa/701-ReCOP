@@ -38,6 +38,10 @@ Our ReCOP is a reactive, time-predictable processor designed for use within a No
 - `run_test_loop.do` testbenches complete recop with a loop program (can be found in `src\assembly\loop_demonstration.mips`)
 - `run_test_program_counter.do` testbenches the PC
 - `run_test_top_level.do` testbenches the suite of _ALL_ recop instructions
+- `run_test_control_unit.do` basic tests for control unit to verify FSM corresponds to intended control signals
+- `run_test_register_file` testbenches register file
+
+There are other trivial testbenches, if all files are compiled correctly all one has to do is refer to Modelsim docs on how to run those simulations
 
 > [!NOTE]
 > All scripts have the intended configuration automated, feel free to tinker with the waves and runtime
