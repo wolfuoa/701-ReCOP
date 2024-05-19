@@ -8,7 +8,8 @@ This project was developed in COMPSYS 701 Advanced Digital Systems Design offere
 
 ## Getting Started
 
-> [!WARNING] > **All commands** listed in this readme **must** be run from the a terminal thats the same directory as this `README.md`
+> [!WARNING]
+> **All commands** listed in this readme **must** be run from the a terminal thats the same directory as this `README.md`
 
 > [!IMPORTANT]
 > Before you start anything run `py generate_file_paths.py` from a terminal in the _same_ directory as this `README` in order to get the correct paths to run synthesis and simulations
