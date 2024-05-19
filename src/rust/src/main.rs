@@ -33,6 +33,10 @@ fn main() {
     for line in fs::read_to_string(file_path).unwrap().lines() {
         println!("Current line is {}", line);
 
+        if line.trim().is_empty() || line.trim().starts_with("--") {
+            continue;
+        }
+
         let comments_removed: &str = line.split("--").collect::<Vec<_>>()[0];
 
         println!("Current comment removed line is {}", comments_removed);

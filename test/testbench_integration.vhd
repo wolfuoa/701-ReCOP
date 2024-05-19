@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.file_paths;
 
 entity testbench_integration is
 end entity;
@@ -18,6 +19,9 @@ architecture test of testbench_integration is
 begin
 
     top_level_inst : entity work.top_level
+        generic map(
+            program_file_path => file_paths.loop_program
+        )
         port map(
             clock             => t_clock,
             enable            => t_enable,
@@ -39,9 +43,9 @@ begin
 
     CLOCK : process
     begin
-        wait for 10 ns;
         t_clock <= '1';
         wait for 10 ns;
         t_clock <= '0';
+        wait for 10 ns;
     end process;
 end architecture;

@@ -37,6 +37,9 @@ library altera_mf;
 use altera_mf.all;
 
 entity prog_mem is
+    generic (
+        program_file_path : string
+    );
     port (
         address : in  std_logic_vector(15 downto 0);
         clock   : in  std_logic := '1';
@@ -80,7 +83,7 @@ begin
     generic map(
         clock_enable_input_a   => "BYPASS",
         clock_enable_output_a  => "BYPASS",
-        init_file              => "/programs/mips.mif", -- Replace with absolute path in modelsim
+        init_file              => program_file_path, -- Replace with absolute path in modelsim
         intended_device_family => "Cyclone II",
         lpm_hint               => "ENABLE_RUNTIME_MOD=NO",
         lpm_type               => "altsyncram",
