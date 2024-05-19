@@ -28,7 +28,7 @@ begin
     -- unblock_datacall <= not KEY(1);
 
     LEDG  <= dpcr_data_out(8 downto 0);
-    LEDR  <= dpcr_data_out(31 downto 15);
+    LEDR  <= dpcr_data_out(31 downto 14);
 
     top_level_inst : entity work.top_level
         generic map(

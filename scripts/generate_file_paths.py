@@ -7,19 +7,19 @@ def get_absolute_path(filename):
     return absolute_path
 
 paths = [{
-        "relative_path": "src/programs/loop.mif",
+        "relative_path": "../src/programs/loop.mif",
         "variable_name": "loop_program"
         },
         {
-        "relative_path": "src/programs/fpga_demonstration.mif",
+        "relative_path": "../src/programs/fpga_demonstration.mif",
         "variable_name": "max_program"
         }, 
         {
-        "relative_path": "src/programs/fpga_calculator_demo.mif",
+        "relative_path": "../src/programs/fpga_calculator_demo.mif",
         "variable_name": "calculator_program"
         }, 
         {
-        "relative_path": "src/programs/biglari.mif",
+        "relative_path": "../src/programs/biglari.mif",
         "variable_name": "biglari_program"
         }, 
         ]
@@ -30,7 +30,7 @@ for path in paths:
     to_write.append({"variable_name": path["variable_name"], 
                    "absolute_path": get_absolute_path(path["relative_path"])})
     
-f = open("src/vhdl/utils/file_paths.vhd", "w")
+f = open("./src/vhdl/utils/file_paths.vhd", "w")
 
 f.write("-- This file should be updated using the script called generate_file_paths.py at the root\n")
 f.write("package file_paths is\n")
