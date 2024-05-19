@@ -49,3 +49,13 @@ There are other trivial testbenches, if all files are compiled correctly all one
 ## Editing the programs/code
 
 Please Refer to the nested README.md files for comprehensive instructions on testing existing programs and writing your own assembly programs.
+
+## Troubleshooting
+
+If you can't run the scripts for whatever reason but have Modelsim installed, you'll have to:
+
+1. Manually edit `src\vhdl\utils\file_paths.vhd` with the correct _absolute_ file paths to the `.mif` files (**IMPORTANT EVEN FOR QUARTUS**)
+2. Open modelsim
+3. Change directory to the folder `/test/scripts` (_in Modelsim_)
+4. Run the compile script `do compile.do`
+5. Run the test scripts (refer to main `README`)
