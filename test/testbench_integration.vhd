@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.file_paths;
 
 entity testbench_integration is
 end entity;
@@ -19,7 +20,7 @@ begin
 
     top_level_inst : entity work.top_level
         generic map(
-            program_file_path => "C:\Users\AKLbc\Desktop\Development\701-ReCOP\src\programs\loop.mif"
+            program_file_path => file_paths.loop_program
         )
         port map(
             clock             => t_clock,

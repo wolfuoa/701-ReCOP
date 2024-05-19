@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.file_paths;
 
 entity program_top_level is
     port (
@@ -31,7 +32,7 @@ begin
 
     top_level_inst : entity work.top_level
         generic map(
-            program_file_path => "pipelined mips"
+            program_file_path => file_paths.calculator_program
         )
         port map(
             clock                   => CLOCK_50,
