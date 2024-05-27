@@ -37,9 +37,11 @@ fn main() {
         }
 
         if line.trim().ends_with(":") {
-            let label_name = isolate_label(":", line.trim()).unwrap();
+            let label_name = line.split(":").collect::<Vec<_>>()[0].to_string();
+
             println!("Label found: {} for line {}", label_name, program_counter);
             labels.insert(label_name.to_string(), program_counter);
+            continue;
         }
 
         program_counter += 1;
@@ -118,6 +120,7 @@ fn process_argument(arg: &str, labels_hashmap: &HashMap<String, i32>) -> String 
         return format!("{:016b}", operand_num);
     } else {
         let label_name: String = isolate_label("@", arg).unwrap();
+        println!("label found! {}", label_name);
         return format!("{:016b}", labels_hashmap.get(&label_name).unwrap());
     }
 }
