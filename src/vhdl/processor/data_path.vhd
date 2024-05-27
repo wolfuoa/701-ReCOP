@@ -345,7 +345,7 @@ begin
         rx_register_value_out & immediate_buffer_register_value_out when others;
 
     dprr_register_data_in <= dprr_data_in when (dprr_clear = '0') else
-                             (dprr_data_in and x"FFFD");
+                             (dprr_data_in and x"FFFFFFFD");
 
     with data_memory_data_select select
         data_memory_data_in <= immediate when mux_select_constants.data_memory_data_immediate,

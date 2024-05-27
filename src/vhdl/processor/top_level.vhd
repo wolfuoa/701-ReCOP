@@ -5,7 +5,7 @@ use work.recop_types.all;
 use work.opcodes;
 use work.mux_select_constants.all;
 
-entity top_level is
+entity recop_wolf_top_level is
     generic (
         program_file_path : string
     );
@@ -21,7 +21,7 @@ entity top_level is
     );
 end entity;
 
-architecture processor of top_level is
+architecture processor of recop_wolf_top_level is
 
     signal dpcr_write_enable                  : std_logic := '0';
     signal dpcr_select                        : std_logic := '0';
