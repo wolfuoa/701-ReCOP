@@ -18,6 +18,8 @@ pub enum Instruction {
     PRESENT,
     DATACALLR,
     DATACALLI,
+    NBDATACALLR,
+    NBDATACALLI,
     SZ,
     CLFZ,
     LSIP,
@@ -52,6 +54,8 @@ enum OpCode {
     PRESENT,
     DATACALLR,
     DATACALLI,
+    NBDATACALLR,
+    NBDATACALLI,
     SZ,
     CLFZ,
     LSIP,
@@ -82,6 +86,8 @@ impl OpCode {
             OpCode::PRESENT => "011100".to_owned(),
             OpCode::DATACALLR => "101000".to_owned(),
             OpCode::DATACALLI => "101001".to_owned(),
+            OpCode::NBDATACALLR => "111111".to_owned(),
+            OpCode::NBDATACALLI => "111100".to_owned(),
             OpCode::SZ => "010100".to_owned(),
             OpCode::CLFZ => "010000".to_owned(),
             OpCode::LSIP => "110111".to_owned(),
@@ -130,6 +136,8 @@ impl Instruction {
             Instruction::PRESENT => InstructionType::Immediate.am_bits(),
             Instruction::DATACALLR => InstructionType::Register.am_bits(),
             Instruction::DATACALLI => InstructionType::Immediate.am_bits(),
+            Instruction::NBDATACALLR => InstructionType::Register.am_bits(),
+            Instruction::NBDATACALLI => InstructionType::Immediate.am_bits(),
             Instruction::SZ => InstructionType::Immediate.am_bits(),
             Instruction::CLFZ => InstructionType::Inherent.am_bits(),
             Instruction::LSIP => InstructionType::Register.am_bits(),
@@ -153,6 +161,8 @@ impl Instruction {
             Instruction::PRESENT => OpCode::PRESENT.opcode_bits(),
             Instruction::DATACALLR => OpCode::DATACALLR.opcode_bits(),
             Instruction::DATACALLI => OpCode::DATACALLI.opcode_bits(),
+            Instruction::NBDATACALLR => OpCode::NBDATACALLR.opcode_bits(),
+            Instruction::NBDATACALLI => OpCode::NBDATACALLI.opcode_bits(),
             Instruction::SZ => OpCode::SZ.opcode_bits(),
             Instruction::CLFZ => OpCode::CLFZ.opcode_bits(),
             Instruction::LSIP => OpCode::LSIP.opcode_bits(),
@@ -172,8 +182,10 @@ impl Instruction {
 
             Instruction::LDR | Instruction::STRR => InstructionFormat::RzRx,
 
-            Instruction::JR | Instruction::DATACALLI | Instruction::STRD =>
-                InstructionFormat::RxOperand,
+            | Instruction::JR
+            | Instruction::DATACALLI
+            | Instruction::NBDATACALLI
+            | Instruction::STRD => InstructionFormat::RxOperand,
 
             | Instruction::MAXI
             | Instruction::STRI
@@ -184,7 +196,8 @@ impl Instruction {
 
             Instruction::J | Instruction::STRPC | Instruction::SZ => InstructionFormat::Operand,
 
-            Instruction::SSOP | Instruction::DATACALLR => InstructionFormat::Rx,
+            Instruction::SSOP | Instruction::DATACALLR | Instruction::NBDATACALLR =>
+                InstructionFormat::Rx,
 
             Instruction::LSIP => InstructionFormat::Rz,
 
@@ -213,6 +226,8 @@ impl Instruction {
             "PRESENT" | "present" => Some(Instruction::PRESENT),
             "DATACALLR" | "datacallr" => Some(Instruction::DATACALLR),
             "DATACALLI" | "datacalli" => Some(Instruction::DATACALLI),
+            "NBDATACALLR" | "nbdatacallr" => Some(Instruction::NBDATACALLR),
+            "NBDATACALLI" | "nbdatacalli" => Some(Instruction::NBDATACALLI),
             "SZ" | "sz" => Some(Instruction::SZ),
             "CLFZ" | "clfz" => Some(Instruction::CLFZ),
             "LSIP" | "lsip" => Some(Instruction::LSIP),

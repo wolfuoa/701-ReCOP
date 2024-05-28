@@ -881,6 +881,7 @@ begin
                     (opcode = str) or
                     (opcode = present) or
                     (opcode = datacall_imm_opcode) or
+                    (opcode = nb_datacall_imm_opcode) or
                     (opcode = noop) or
                     (opcode = sz) or
                     (opcode = ssop) or
@@ -890,7 +891,7 @@ begin
                     state_decode_fail <= '0';
                     next_state        <= reg_access;
 
-                elsif (opcode = datacall_reg_opcode) then
+                elsif (opcode = datacall_reg_opcode) or (opcode = nb_datacall_reg_opcode) then
                     state_decode_fail <= '0';
                     next_state        <= datacall_reg_access;
 
@@ -942,7 +943,7 @@ begin
                 elsif (opcode = present) then
                     state_decode_fail <= '0';
                     next_state        <= present_state;
-                elsif (opcode = datacall_imm_opcode) then
+                elsif (opcode = datacall_imm_opcode or opcode = nb_datacall_imm_opcode) then
                     state_decode_fail <= '0';
                     next_state        <= datacall_imm;
                 elsif (opcode = sz) then
@@ -1047,7 +1048,9 @@ begin
                 next_state                                     <= instruction_fetch;
 
             when datacall_waiting => state_decode_fail     <= '0';
-                if dprr = '1' then
+                if dprr = '1'
+                    or (opcode = nb_datacall_imm_opcode)
+                    or (opcode = nb_datacall_reg_opcode) then
                     next_state <= instruction_fetch;
                 else
                     next_state <= datacall_waiting;
