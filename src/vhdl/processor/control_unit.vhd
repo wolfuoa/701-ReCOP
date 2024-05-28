@@ -71,9 +71,10 @@ architecture rtl of control_unit is
         branch_conditional, datacall_imm, datacall_reg_access,
         datacall_reg, datacall_waiting, store_pc, clear_z, ssop_state,
         lsip_state, max_state); -- TODO: Add all other states 
-    signal state         : state_type := no_op;
-    signal next_state    : state_type;
-    signal decoded_ALUop : std_logic_vector(1 downto 0);
+    signal state                    : state_type := no_op;
+    signal next_state               : state_type;
+    signal decoded_ALUop            : std_logic_vector(1 downto 0);
+    signal is_non_blocking_datacall : std_logic;
 begin
 
     -- Defaults for outputs (for copying)
@@ -111,6 +112,17 @@ begin
         alu_ops.alu_sub when subvr,
         alu_ops.alu_add when others;
 
+    STORE_NON_BLOCKING_DATACALL : process (clock, opcode)
+    begin
+        if rising_edge(clock) then
+            if ((opcode = nb_datacall_imm_opcode) or (opcode = nb_datacall_reg_opcode)) then
+                is_non_blocking_datacall <= '1';
+            else
+                is_non_blocking_datacall <= '0';
+            end if;
+        end if;
+    end process;
+
     CYCLE_OUTPUT_DECODE : process (state)
     begin
         case (state) is
@@ -130,7 +142,7 @@ begin
                 alu_op_sel                         <= alu_ops.alu_add; -- changed
                 data_memory_address_select         <= "00";
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= mux_select_constants.regfile_write_immediate;
                 z_register_write_enable            <= '0';
@@ -159,7 +171,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '0';
@@ -215,7 +227,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_write_enable         <= '0';
                 alu_op1_sel                        <= mux_select_constants.alu_op1_immediate; -- changed
-                alu_op2_sel                        <= mux_select_constants.alu_op2_rx; -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_rx;        -- changed
                 register_file_rz_select            <= '0';
                 register_file_write_select         <= mux_select_constants.regfile_write_aluout;
                 z_register_write_enable            <= '1'; -- changed
@@ -241,9 +253,9 @@ begin
                 dpcr_select                        <= '0';
                 alu_op_sel                         <= "00";
                 data_memory_address_select         <= "00";
-                register_file_write_enable         <= '1'; -- changed
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
-                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
+                register_file_write_enable         <= '1';                                          -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;              -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one;             -- changed
                 register_file_write_select         <= mux_select_constants.regfile_write_immediate; -- changed
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 z_register_write_enable            <= '0';
@@ -437,7 +449,7 @@ begin
                 data_memory_data_select            <= mux_select_constants.data_memory_data_rx;
                 data_memory_address_select         <= mux_select_constants.data_memory_address_immediate;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '0';
@@ -465,7 +477,7 @@ begin
                 alu_op_sel                         <= "00";
                 data_memory_address_select         <= mux_select_constants.data_memory_address_immediate;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '0';
@@ -493,7 +505,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_write_enable         <= '0';
                 alu_op1_sel                        <= mux_select_constants.alu_op1_immediate; -- changed
-                alu_op2_sel                        <= mux_select_constants.alu_op2_rz; -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_rz;        -- changed
                 register_file_rz_select            <= '0';
                 register_file_write_select         <= mux_select_constants.regfile_write_aluout;
                 z_register_write_enable            <= '1'; -- changed
@@ -659,7 +671,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_r7;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '0';
@@ -770,7 +782,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '1';
@@ -797,7 +809,7 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 register_file_write_enable         <= '0';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;  -- changed
                 alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
                 register_file_write_select         <= "000";
                 z_register_write_enable            <= '0';
@@ -825,8 +837,8 @@ begin
                 data_memory_address_select         <= "00";
                 register_file_rz_select            <= mux_select_constants.regfile_rz_normal;
                 register_file_write_enable         <= '1';
-                alu_op1_sel                        <= mux_select_constants.alu_op1_pc; -- changed
-                alu_op2_sel                        <= mux_select_constants.alu_op2_one; -- changed
+                alu_op1_sel                        <= mux_select_constants.alu_op1_pc;        -- changed
+                alu_op2_sel                        <= mux_select_constants.alu_op2_one;       -- changed
                 register_file_write_select         <= mux_select_constants.regfile_write_sip; -- changed
                 z_register_write_enable            <= '0';
                 program_memory_read_enable         <= '0';
@@ -943,7 +955,7 @@ begin
                 elsif (opcode = present) then
                     state_decode_fail <= '0';
                     next_state        <= present_state;
-                elsif (opcode = datacall_imm_opcode or opcode = nb_datacall_imm_opcode) then
+                elsif ((opcode = datacall_imm_opcode) or (opcode = nb_datacall_imm_opcode)) then
                     state_decode_fail <= '0';
                     next_state        <= datacall_imm;
                 elsif (opcode = sz) then
@@ -1027,30 +1039,36 @@ begin
                 next_state                                     <= instruction_fetch;
 
             when datacall_imm => state_decode_fail         <= '0';
-                next_state                                     <= datacall_waiting;
+                if (is_non_blocking_datacall = '1') then
+                    next_state <= instruction_fetch;
+                else
+                    next_state <= datacall_waiting;
+                end if;
 
-            when datacall_reg => state_decode_fail         <= '0';
-                next_state                                     <= datacall_waiting;
+            when datacall_reg => state_decode_fail <= '0';
+                if (is_non_blocking_datacall = '1') then
+                    next_state <= instruction_fetch;
+                else
+                    next_state <= datacall_waiting;
+                end if;
 
-            when store_pc => state_decode_fail             <= '0';
-                next_state                                     <= instruction_fetch;
+            when store_pc => state_decode_fail         <= '0';
+                next_state                                 <= instruction_fetch;
 
-            when clear_z => state_decode_fail              <= '0';
-                next_state                                     <= instruction_fetch;
+            when clear_z => state_decode_fail          <= '0';
+                next_state                                 <= instruction_fetch;
 
-            when ssop_state => state_decode_fail           <= '0';
-                next_state                                     <= instruction_fetch;
+            when ssop_state => state_decode_fail       <= '0';
+                next_state                                 <= instruction_fetch;
 
-            when lsip_state => state_decode_fail           <= '0';
-                next_state                                     <= instruction_fetch;
+            when lsip_state => state_decode_fail       <= '0';
+                next_state                                 <= instruction_fetch;
 
-            when max_state => state_decode_fail            <= '0';
-                next_state                                     <= instruction_fetch;
+            when max_state => state_decode_fail        <= '0';
+                next_state                                 <= instruction_fetch;
 
-            when datacall_waiting => state_decode_fail     <= '0';
-                if dprr = '1'
-                    or (opcode = nb_datacall_imm_opcode)
-                    or (opcode = nb_datacall_reg_opcode) then
+            when datacall_waiting => state_decode_fail <= '0';
+                if dprr = '1' then
                     next_state <= instruction_fetch;
                 else
                     next_state <= datacall_waiting;
