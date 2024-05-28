@@ -49,8 +49,20 @@
 |              | Rz            |
 |              | Nothing       |
 
-MAX $r5, #1000
-(AM+OPCODE)(0101)(1000)(format)
-let new instruciton ; str
-if format is rx operand
-new_instruction AMOPCODE + 0000 + 0101 + 1000
+## Formats for writing assembly
+
+### Basics
+
+- Use `$r` for registers i.e `ssop $r7`
+- Use `#` for immediate values i.e `addi $r7 $r7 #1`
+
+### Labels
+
+- Declare labels with a colon i.e:
+
+```
+loop:
+    -- Code here
+```
+
+- Use labels using `@` i.e `sz @end` (where the label _end_ was declared with `end:`)
