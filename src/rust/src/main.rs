@@ -2,15 +2,13 @@ mod instruction;
 
 use crate::instruction::Instruction;
 use crate::instruction::InstructionEntry;
-use crate::instruction::InstructionFormat;
 
-use std::borrow::Borrow;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-
 static FILE_HEADER: &str =
     "DEPTH = 65536;\nWIDTH = 32;\nADDRESS_RADIX = DEC;\nDATA_RADIX = BIN;\nCONTENT\nBEGIN\n";
 static FILE_END: &str = "END;";
@@ -21,6 +19,8 @@ fn main() {
     let save_path = Path::new(&args[2]);
     let display = save_path.display();
 
+    let mut labels: HashMap<String, i32> = HashMap::new();
+
     let mut file = match File::create(&save_path) {
         Err(why) => panic!("couldn't create {}: {}", display, why),
         Ok(file) => file,
@@ -30,10 +30,29 @@ fn main() {
 
     let mut program: String = FILE_HEADER.to_string();
     let mut program_counter: i32 = 0;
+
+    for line in fs::read_to_string(file_path).unwrap().lines() {
+        if line.trim().is_empty() || line.trim().starts_with("--") {
+            continue;
+        }
+
+        if line.trim().ends_with(":") {
+            let label_name = line.split(":").collect::<Vec<_>>()[0].to_string();
+
+            println!("Label found: {} for line {}", label_name, program_counter);
+            labels.insert(label_name.to_string(), program_counter);
+            continue;
+        }
+
+        program_counter += 1;
+    }
+
+    program_counter = 0;
+
     for line in fs::read_to_string(file_path).unwrap().lines() {
         println!("Current line is {}", line);
 
-        if line.trim().is_empty() || line.trim().starts_with("--") {
+        if line.trim().is_empty() || line.trim().starts_with("--") || line.trim().ends_with(":") {
             continue;
         }
 
@@ -56,15 +75,15 @@ fn main() {
 
         // Register
         if line_arg_length > 1 {
-            current_instruction.arg_one = Some(process_argument(&split_line[1]));
+            current_instruction.arg_one = Some(process_argument(&split_line[1], &labels));
         }
 
         if line_arg_length > 2 {
-            current_instruction.arg_two = Some(process_argument(&split_line[2]));
+            current_instruction.arg_two = Some(process_argument(&split_line[2], &labels));
         }
 
         if line_arg_length > 3 {
-            current_instruction.arg_three = Some(process_argument(&split_line[3]));
+            current_instruction.arg_three = Some(process_argument(&split_line[3], &labels));
         }
 
         let encoded_instruction = current_instruction.encode_instruction();
@@ -88,12 +107,20 @@ fn isolate_number(delimiter: &str, value: &str) -> Option<i32> {
     return Some(value.split(delimiter).collect::<Vec<_>>()[1].parse().unwrap());
 }
 
-fn process_argument(arg: &str) -> String {
+fn isolate_label(delimiter: &str, value: &str) -> Option<String> {
+    return Some(value.split(delimiter).collect::<Vec<_>>()[1].to_string());
+}
+
+fn process_argument(arg: &str, labels_hashmap: &HashMap<String, i32>) -> String {
     if arg.contains("$r") {
         let reg_num: i32 = isolate_number("$r", arg).unwrap();
         return format!("{:04b}", reg_num);
-    } else {
+    } else if arg.contains("#") {
         let operand_num: i32 = isolate_number("#", arg).unwrap();
         return format!("{:016b}", operand_num);
+    } else {
+        let label_name: String = isolate_label("@", arg).unwrap();
+        println!("label found! {}", label_name);
+        return format!("{:016b}", labels_hashmap.get(&label_name).unwrap());
     }
 }
